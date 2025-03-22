@@ -1,0 +1,8 @@
+coindbt:
+  outputs:
+    dev:
+      type: duckdb
+      path: warehouse.duckdb
+      schema: dbt 
+      threads: 4
+  target: dev

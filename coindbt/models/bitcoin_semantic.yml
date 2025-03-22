@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: bitcoin_history_semantic
+    description: "bitcoin token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: bitcoin_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: bitcoin_current_price_usd
+        description: "Average bitcoin current price in USD"
+        agg: average
+        expr: bitcoin_current_price_usd
+      - name: bitcoin_market_cap_usd
+        description: "Average bitcoin market cap in USD"
+        agg: average
+        expr: bitcoin_market_cap_usd
+      - name: bitcoin_current_price_usd_sq
+        description: "Average squared bitcoin current price in USD"
+        agg: average
+        expr: power(bitcoin_current_price_usd, 2)
+      - name: bitcoin_market_cap_usd_sq
+        description: "Average squared bitcoin market cap in USD"
+        agg: average
+        expr: power(bitcoin_market_cap_usd, 2)
+
+metrics:
+  - name: bitcoin_average_price_usd
+    description: "bitcoin - Average Price (USD)"
+    type: simple
+    label: "bitcoin - Average Price (USD)"
+    type_params:
+      measure: bitcoin_current_price_usd
+
+  - name: bitcoin_average_price_usd_sq
+    description: "bitcoin - Average Squared Price (USD²)"
+    type: simple
+    label: "bitcoin - Average Squared Price (USD²)"
+    type_params:
+      measure: bitcoin_current_price_usd_sq
+
+  - name: bitcoin_average_market_cap_usd
+    description: "bitcoin - Average Market Cap (USD)"
+    type: simple
+    label: "bitcoin - Average Market Cap (USD)"
+    type_params:
+      measure: bitcoin_market_cap_usd
+
+  - name: bitcoin_average_market_cap_usd_sq
+    description: "bitcoin - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "bitcoin - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: bitcoin_market_cap_usd_sq
+
+  - name: bitcoin_price_variance
+    description: "bitcoin - Variance of current price in USD"
+    type: derived
+    label: "bitcoin Price Variance (USD)"
+    type_params:
+      expr: bitcoin_average_price_usd_sq - (bitcoin_average_price_usd * bitcoin_average_price_usd)
+      metrics:
+        - name: bitcoin_average_price_usd_sq
+        - name: bitcoin_average_price_usd
+
+  - name: bitcoin_market_cap_variance
+    description: "bitcoin - Variance of market cap in USD"
+    type: derived
+    label: "bitcoin Market Cap Variance (USD)"
+    type_params:
+      expr: bitcoin_average_market_cap_usd_sq - (bitcoin_average_market_cap_usd * bitcoin_average_market_cap_usd)
+      metrics:
+        - name: bitcoin_average_market_cap_usd_sq
+        - name: bitcoin_average_market_cap_usd
+
+  - name: bitcoin_price_volatility
+    description: "Coefficient of variation (volatility) for bitcoin price"
+    type: derived
+    label: "bitcoin Volatility (CV)"
+    type_params:
+      expr: "sqrt(bitcoin_price_variance) / bitcoin_average_price_usd"
+      metrics:
+        - name: bitcoin_price_variance
+        - name: bitcoin_average_price_usd
+
+  - name: bitcoin_market_cap_volatility
+    description: "Coefficient of variation (volatility) for bitcoin market cap"
+    type: derived
+    label: "bitcoin Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt(bitcoin_market_cap_variance), bitcoin_average_market_cap_usd, 0)"
+      metrics:
+        - name: bitcoin_market_cap_variance
+        - name: bitcoin_average_market_cap_usd
+  
+  - name: bitcoin_price_moving_average_7d
+    description: "7-day moving average of bitcoin price"
+    type: cumulative
+    label: "bitcoin Price Moving Average (7d)"
+    type_params:
+      measure: bitcoin_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: bitcoin_first_market_cap_usd
+    description: "First bitcoin market cap value (USD) over the window"
+    type: cumulative
+    label: "bitcoin First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: bitcoin_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: bitcoin_last_market_cap_usd
+    description: "Last bitcoin market cap value (USD) over the window"
+    type: cumulative
+    label: "bitcoin Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: bitcoin_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: bitcoin_market_cap_growth_rate
+    description: "bitcoin - Market Cap Growth Rate (%)"
+    type: derived
+    label: "bitcoin Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division(bitcoin_last_market_cap_usd - bitcoin_first_market_cap_usd, bitcoin_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: bitcoin_first_market_cap_usd
+        - name: bitcoin_last_market_cap_usd

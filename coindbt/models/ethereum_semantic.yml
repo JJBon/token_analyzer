@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: ethereum_history_semantic
+    description: "ethereum token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: ethereum_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: ethereum_current_price_usd
+        description: "Average ethereum current price in USD"
+        agg: average
+        expr: ethereum_current_price_usd
+      - name: ethereum_market_cap_usd
+        description: "Average ethereum market cap in USD"
+        agg: average
+        expr: ethereum_market_cap_usd
+      - name: ethereum_current_price_usd_sq
+        description: "Average squared ethereum current price in USD"
+        agg: average
+        expr: power(ethereum_current_price_usd, 2)
+      - name: ethereum_market_cap_usd_sq
+        description: "Average squared ethereum market cap in USD"
+        agg: average
+        expr: power(ethereum_market_cap_usd, 2)
+
+metrics:
+  - name: ethereum_average_price_usd
+    description: "ethereum - Average Price (USD)"
+    type: simple
+    label: "ethereum - Average Price (USD)"
+    type_params:
+      measure: ethereum_current_price_usd
+
+  - name: ethereum_average_price_usd_sq
+    description: "ethereum - Average Squared Price (USD²)"
+    type: simple
+    label: "ethereum - Average Squared Price (USD²)"
+    type_params:
+      measure: ethereum_current_price_usd_sq
+
+  - name: ethereum_average_market_cap_usd
+    description: "ethereum - Average Market Cap (USD)"
+    type: simple
+    label: "ethereum - Average Market Cap (USD)"
+    type_params:
+      measure: ethereum_market_cap_usd
+
+  - name: ethereum_average_market_cap_usd_sq
+    description: "ethereum - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "ethereum - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: ethereum_market_cap_usd_sq
+
+  - name: ethereum_price_variance
+    description: "ethereum - Variance of current price in USD"
+    type: derived
+    label: "ethereum Price Variance (USD)"
+    type_params:
+      expr: ethereum_average_price_usd_sq - (ethereum_average_price_usd * ethereum_average_price_usd)
+      metrics:
+        - name: ethereum_average_price_usd_sq
+        - name: ethereum_average_price_usd
+
+  - name: ethereum_market_cap_variance
+    description: "ethereum - Variance of market cap in USD"
+    type: derived
+    label: "ethereum Market Cap Variance (USD)"
+    type_params:
+      expr: ethereum_average_market_cap_usd_sq - (ethereum_average_market_cap_usd * ethereum_average_market_cap_usd)
+      metrics:
+        - name: ethereum_average_market_cap_usd_sq
+        - name: ethereum_average_market_cap_usd
+
+  - name: ethereum_price_volatility
+    description: "Coefficient of variation (volatility) for ethereum price"
+    type: derived
+    label: "ethereum Volatility (CV)"
+    type_params:
+      expr: "sqrt(ethereum_price_variance) / ethereum_average_price_usd"
+      metrics:
+        - name: ethereum_price_variance
+        - name: ethereum_average_price_usd
+
+  - name: ethereum_market_cap_volatility
+    description: "Coefficient of variation (volatility) for ethereum market cap"
+    type: derived
+    label: "ethereum Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt(ethereum_market_cap_variance), ethereum_average_market_cap_usd, 0)"
+      metrics:
+        - name: ethereum_market_cap_variance
+        - name: ethereum_average_market_cap_usd
+  
+  - name: ethereum_price_moving_average_7d
+    description: "7-day moving average of ethereum price"
+    type: cumulative
+    label: "ethereum Price Moving Average (7d)"
+    type_params:
+      measure: ethereum_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: ethereum_first_market_cap_usd
+    description: "First ethereum market cap value (USD) over the window"
+    type: cumulative
+    label: "ethereum First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: ethereum_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: ethereum_last_market_cap_usd
+    description: "Last ethereum market cap value (USD) over the window"
+    type: cumulative
+    label: "ethereum Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: ethereum_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: ethereum_market_cap_growth_rate
+    description: "ethereum - Market Cap Growth Rate (%)"
+    type: derived
+    label: "ethereum Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division(ethereum_last_market_cap_usd - ethereum_first_market_cap_usd, ethereum_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: ethereum_first_market_cap_usd
+        - name: ethereum_last_market_cap_usd

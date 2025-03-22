@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: {{COIN}}_history_semantic
+    description: "{{COIN}} token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: {{COIN}}_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: {{COIN}}_current_price_usd
+        description: "Average {{COIN}} current price in USD"
+        agg: average
+        expr: {{COIN}}_current_price_usd
+      - name: {{COIN}}_market_cap_usd
+        description: "Average {{COIN}} market cap in USD"
+        agg: average
+        expr: {{COIN}}_market_cap_usd
+      - name: {{COIN}}_current_price_usd_sq
+        description: "Average squared {{COIN}} current price in USD"
+        agg: average
+        expr: power({{COIN}}_current_price_usd, 2)
+      - name: {{COIN}}_market_cap_usd_sq
+        description: "Average squared {{COIN}} market cap in USD"
+        agg: average
+        expr: power({{COIN}}_market_cap_usd, 2)
+
+metrics:
+  - name: {{COIN}}_average_price_usd
+    description: "{{COIN}} - Average Price (USD)"
+    type: simple
+    label: "{{COIN}} - Average Price (USD)"
+    type_params:
+      measure: {{COIN}}_current_price_usd
+
+  - name: {{COIN}}_average_price_usd_sq
+    description: "{{COIN}} - Average Squared Price (USD²)"
+    type: simple
+    label: "{{COIN}} - Average Squared Price (USD²)"
+    type_params:
+      measure: {{COIN}}_current_price_usd_sq
+
+  - name: {{COIN}}_average_market_cap_usd
+    description: "{{COIN}} - Average Market Cap (USD)"
+    type: simple
+    label: "{{COIN}} - Average Market Cap (USD)"
+    type_params:
+      measure: {{COIN}}_market_cap_usd
+
+  - name: {{COIN}}_average_market_cap_usd_sq
+    description: "{{COIN}} - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "{{COIN}} - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: {{COIN}}_market_cap_usd_sq
+
+  - name: {{COIN}}_price_variance
+    description: "{{COIN}} - Variance of current price in USD"
+    type: derived
+    label: "{{COIN}} Price Variance (USD)"
+    type_params:
+      expr: {{COIN}}_average_price_usd_sq - ({{COIN}}_average_price_usd * {{COIN}}_average_price_usd)
+      metrics:
+        - name: {{COIN}}_average_price_usd_sq
+        - name: {{COIN}}_average_price_usd
+
+  - name: {{COIN}}_market_cap_variance
+    description: "{{COIN}} - Variance of market cap in USD"
+    type: derived
+    label: "{{COIN}} Market Cap Variance (USD)"
+    type_params:
+      expr: {{COIN}}_average_market_cap_usd_sq - ({{COIN}}_average_market_cap_usd * {{COIN}}_average_market_cap_usd)
+      metrics:
+        - name: {{COIN}}_average_market_cap_usd_sq
+        - name: {{COIN}}_average_market_cap_usd
+
+  - name: {{COIN}}_price_volatility
+    description: "Coefficient of variation (volatility) for {{COIN}} price"
+    type: derived
+    label: "{{COIN}} Volatility (CV)"
+    type_params:
+      expr: "sqrt({{COIN}}_price_variance) / {{COIN}}_average_price_usd"
+      metrics:
+        - name: {{COIN}}_price_variance
+        - name: {{COIN}}_average_price_usd
+
+  - name: {{COIN}}_market_cap_volatility
+    description: "Coefficient of variation (volatility) for {{COIN}} market cap"
+    type: derived
+    label: "{{COIN}} Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt({{COIN}}_market_cap_variance), {{COIN}}_average_market_cap_usd, 0)"
+      metrics:
+        - name: {{COIN}}_market_cap_variance
+        - name: {{COIN}}_average_market_cap_usd
+  
+  - name: {{COIN}}_price_moving_average_7d
+    description: "7-day moving average of {{COIN}} price"
+    type: cumulative
+    label: "{{COIN}} Price Moving Average (7d)"
+    type_params:
+      measure: {{COIN}}_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: {{COIN}}_first_market_cap_usd
+    description: "First {{COIN}} market cap value (USD) over the window"
+    type: cumulative
+    label: "{{COIN}} First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: {{COIN}}_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: {{COIN}}_last_market_cap_usd
+    description: "Last {{COIN}} market cap value (USD) over the window"
+    type: cumulative
+    label: "{{COIN}} Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: {{COIN}}_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: {{COIN}}_market_cap_growth_rate
+    description: "{{COIN}} - Market Cap Growth Rate (%)"
+    type: derived
+    label: "{{COIN}} Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division({{COIN}}_last_market_cap_usd - {{COIN}}_first_market_cap_usd, {{COIN}}_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: {{COIN}}_first_market_cap_usd
+        - name: {{COIN}}_last_market_cap_usd

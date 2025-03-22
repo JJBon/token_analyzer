@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: sui_history_semantic
+    description: "sui token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: sui_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: sui_current_price_usd
+        description: "Average sui current price in USD"
+        agg: average
+        expr: sui_current_price_usd
+      - name: sui_market_cap_usd
+        description: "Average sui market cap in USD"
+        agg: average
+        expr: sui_market_cap_usd
+      - name: sui_current_price_usd_sq
+        description: "Average squared sui current price in USD"
+        agg: average
+        expr: power(sui_current_price_usd, 2)
+      - name: sui_market_cap_usd_sq
+        description: "Average squared sui market cap in USD"
+        agg: average
+        expr: power(sui_market_cap_usd, 2)
+
+metrics:
+  - name: sui_average_price_usd
+    description: "sui - Average Price (USD)"
+    type: simple
+    label: "sui - Average Price (USD)"
+    type_params:
+      measure: sui_current_price_usd
+
+  - name: sui_average_price_usd_sq
+    description: "sui - Average Squared Price (USD²)"
+    type: simple
+    label: "sui - Average Squared Price (USD²)"
+    type_params:
+      measure: sui_current_price_usd_sq
+
+  - name: sui_average_market_cap_usd
+    description: "sui - Average Market Cap (USD)"
+    type: simple
+    label: "sui - Average Market Cap (USD)"
+    type_params:
+      measure: sui_market_cap_usd
+
+  - name: sui_average_market_cap_usd_sq
+    description: "sui - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "sui - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: sui_market_cap_usd_sq
+
+  - name: sui_price_variance
+    description: "sui - Variance of current price in USD"
+    type: derived
+    label: "sui Price Variance (USD)"
+    type_params:
+      expr: sui_average_price_usd_sq - (sui_average_price_usd * sui_average_price_usd)
+      metrics:
+        - name: sui_average_price_usd_sq
+        - name: sui_average_price_usd
+
+  - name: sui_market_cap_variance
+    description: "sui - Variance of market cap in USD"
+    type: derived
+    label: "sui Market Cap Variance (USD)"
+    type_params:
+      expr: sui_average_market_cap_usd_sq - (sui_average_market_cap_usd * sui_average_market_cap_usd)
+      metrics:
+        - name: sui_average_market_cap_usd_sq
+        - name: sui_average_market_cap_usd
+
+  - name: sui_price_volatility
+    description: "Coefficient of variation (volatility) for sui price"
+    type: derived
+    label: "sui Volatility (CV)"
+    type_params:
+      expr: "sqrt(sui_price_variance) / sui_average_price_usd"
+      metrics:
+        - name: sui_price_variance
+        - name: sui_average_price_usd
+
+  - name: sui_market_cap_volatility
+    description: "Coefficient of variation (volatility) for sui market cap"
+    type: derived
+    label: "sui Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt(sui_market_cap_variance), sui_average_market_cap_usd, 0)"
+      metrics:
+        - name: sui_market_cap_variance
+        - name: sui_average_market_cap_usd
+  
+  - name: sui_price_moving_average_7d
+    description: "7-day moving average of sui price"
+    type: cumulative
+    label: "sui Price Moving Average (7d)"
+    type_params:
+      measure: sui_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: sui_first_market_cap_usd
+    description: "First sui market cap value (USD) over the window"
+    type: cumulative
+    label: "sui First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: sui_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: sui_last_market_cap_usd
+    description: "Last sui market cap value (USD) over the window"
+    type: cumulative
+    label: "sui Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: sui_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: sui_market_cap_growth_rate
+    description: "sui - Market Cap Growth Rate (%)"
+    type: derived
+    label: "sui Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division(sui_last_market_cap_usd - sui_first_market_cap_usd, sui_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: sui_first_market_cap_usd
+        - name: sui_last_market_cap_usd

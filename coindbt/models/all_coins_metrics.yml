@@ -1,0 +1,470 @@
+version: 2
+
+metrics:
+  - name: max_price_all_coins
+    description: "Maximum average price among all coins"
+    type: derived
+    label: "Max Price (USD) Across Coins"
+    type_params:
+      expr: >
+        "greatest(
+          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd
+        )"
+      metrics:
+        - name: "coredao_average_price_usd"
+        - name: "bitcoin_average_price_usd"
+        - name: "sui_average_price_usd"
+        - name: "solayer_average_price_usd"
+        - name: "chainlink_average_price_usd"
+        - name: "uniswap_average_price_usd"
+        - name: "deep_average_price_usd"
+        - name: "ripple_average_price_usd"
+        - name: "polkadot_average_price_usd"
+        - name: "mocaverse_average_price_usd"
+        - name: "bittorrent_average_price_usd"
+        - name: "stellar_average_price_usd"
+        - name: "ethereum_average_price_usd"
+        - name: "sushi_average_price_usd"
+        - name: "solana_average_price_usd"
+        - name: "dogecoin_average_price_usd"
+        - name: "cardano_average_price_usd"
+        - name: "litecoin_average_price_usd"
+        - name: "orca_average_price_usd"
+        - name: "ondo_finance_average_price_usd"
+        
+
+  - name: min_price_all_coins
+    description: "Minimum average price among all coins"
+    type: derived
+    label: "Min Price (USD) Across Coins"
+    type_params:
+      expr: >
+        "least(
+          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd
+        )"
+      metrics:
+        - name: "coredao_average_price_usd"
+        - name: "bitcoin_average_price_usd"
+        - name: "sui_average_price_usd"
+        - name: "solayer_average_price_usd"
+        - name: "chainlink_average_price_usd"
+        - name: "uniswap_average_price_usd"
+        - name: "deep_average_price_usd"
+        - name: "ripple_average_price_usd"
+        - name: "polkadot_average_price_usd"
+        - name: "mocaverse_average_price_usd"
+        - name: "bittorrent_average_price_usd"
+        - name: "stellar_average_price_usd"
+        - name: "ethereum_average_price_usd"
+        - name: "sushi_average_price_usd"
+        - name: "solana_average_price_usd"
+        - name: "dogecoin_average_price_usd"
+        - name: "cardano_average_price_usd"
+        - name: "litecoin_average_price_usd"
+        - name: "orca_average_price_usd"
+        - name: "ondo_finance_average_price_usd"
+        
+
+  - name: min_price_volatility_all_coins
+    description: "Min price volatility (coefficient of variation) among all coins"
+    type: derived
+    label: "Min Price Volatility Across Coins"
+    type_params:
+      expr: >
+        least(
+          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility
+        )
+      metrics:
+        - name: "coredao_price_volatility"
+        - name: "bitcoin_price_volatility"
+        - name: "sui_price_volatility"
+        - name: "solayer_price_volatility"
+        - name: "chainlink_price_volatility"
+        - name: "uniswap_price_volatility"
+        - name: "deep_price_volatility"
+        - name: "ripple_price_volatility"
+        - name: "polkadot_price_volatility"
+        - name: "mocaverse_price_volatility"
+        - name: "bittorrent_price_volatility"
+        - name: "stellar_price_volatility"
+        - name: "ethereum_price_volatility"
+        - name: "sushi_price_volatility"
+        - name: "solana_price_volatility"
+        - name: "dogecoin_price_volatility"
+        - name: "cardano_price_volatility"
+        - name: "litecoin_price_volatility"
+        - name: "orca_price_volatility"
+        - name: "ondo_finance_price_volatility"
+        
+
+  - name: max_price_volatility_all_coins
+    description: "Maximum price volatility (coefficient of variation) among all coins"
+    type: derived
+    label: "Max Price Volatility Across Coins"
+    type_params:
+      expr: >
+        greatest(
+          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility
+        )
+      metrics:
+        - name: "coredao_price_volatility"
+        - name: "bitcoin_price_volatility"
+        - name: "sui_price_volatility"
+        - name: "solayer_price_volatility"
+        - name: "chainlink_price_volatility"
+        - name: "uniswap_price_volatility"
+        - name: "deep_price_volatility"
+        - name: "ripple_price_volatility"
+        - name: "polkadot_price_volatility"
+        - name: "mocaverse_price_volatility"
+        - name: "bittorrent_price_volatility"
+        - name: "stellar_price_volatility"
+        - name: "ethereum_price_volatility"
+        - name: "sushi_price_volatility"
+        - name: "solana_price_volatility"
+        - name: "dogecoin_price_volatility"
+        - name: "cardano_price_volatility"
+        - name: "litecoin_price_volatility"
+        - name: "orca_price_volatility"
+        - name: "ondo_finance_price_volatility"
+        
+
+  - name: min_market_cap_volatility_all_coins
+    description: "Min market cap volatility (coefficient of variation) among all coins"
+    type: derived
+    label: "Min Market Cap Volatility Across Coins"
+    type_params:
+      expr: >
+        nonzero_least(
+          [coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility
+          ]
+        )
+      metrics:
+        - name: "coredao_market_cap_volatility"
+        - name: "bitcoin_market_cap_volatility"
+        - name: "sui_market_cap_volatility"
+        - name: "solayer_market_cap_volatility"
+        - name: "chainlink_market_cap_volatility"
+        - name: "uniswap_market_cap_volatility"
+        - name: "deep_market_cap_volatility"
+        - name: "ripple_market_cap_volatility"
+        - name: "polkadot_market_cap_volatility"
+        - name: "mocaverse_market_cap_volatility"
+        - name: "bittorrent_market_cap_volatility"
+        - name: "stellar_market_cap_volatility"
+        - name: "ethereum_market_cap_volatility"
+        - name: "sushi_market_cap_volatility"
+        - name: "solana_market_cap_volatility"
+        - name: "dogecoin_market_cap_volatility"
+        - name: "cardano_market_cap_volatility"
+        - name: "litecoin_market_cap_volatility"
+        - name: "orca_market_cap_volatility"
+        - name: "ondo_finance_market_cap_volatility"
+        
+
+  - name: max_market_cap_volatility_all_coins
+    description: "Maximum market cap volatility (coefficient of variation) among all coins"
+    type: derived
+    label: "Max Market Cap Volatility Across Coins"
+    type_params:
+      expr: >
+        greatest(
+          coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility
+        )
+      metrics:
+        - name: "coredao_market_cap_volatility"
+        - name: "bitcoin_market_cap_volatility"
+        - name: "sui_market_cap_volatility"
+        - name: "solayer_market_cap_volatility"
+        - name: "chainlink_market_cap_volatility"
+        - name: "uniswap_market_cap_volatility"
+        - name: "deep_market_cap_volatility"
+        - name: "ripple_market_cap_volatility"
+        - name: "polkadot_market_cap_volatility"
+        - name: "mocaverse_market_cap_volatility"
+        - name: "bittorrent_market_cap_volatility"
+        - name: "stellar_market_cap_volatility"
+        - name: "ethereum_market_cap_volatility"
+        - name: "sushi_market_cap_volatility"
+        - name: "solana_market_cap_volatility"
+        - name: "dogecoin_market_cap_volatility"
+        - name: "cardano_market_cap_volatility"
+        - name: "litecoin_market_cap_volatility"
+        - name: "orca_market_cap_volatility"
+        - name: "ondo_finance_market_cap_volatility"
+        
+
+  - name: coin_with_max_market_cap_volatility
+    description: "Coin with the highest market cap volatility across all coins"
+    type: derived
+    label: "Coin With Max Market Cap Volatility"
+    type_params:
+      expr: >
+        greatest_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE)
+        ]
+        )
+      metrics:
+        - name: "coredao_market_cap_volatility"
+        - name: "bitcoin_market_cap_volatility"
+        - name: "sui_market_cap_volatility"
+        - name: "solayer_market_cap_volatility"
+        - name: "chainlink_market_cap_volatility"
+        - name: "uniswap_market_cap_volatility"
+        - name: "deep_market_cap_volatility"
+        - name: "ripple_market_cap_volatility"
+        - name: "polkadot_market_cap_volatility"
+        - name: "mocaverse_market_cap_volatility"
+        - name: "bittorrent_market_cap_volatility"
+        - name: "stellar_market_cap_volatility"
+        - name: "ethereum_market_cap_volatility"
+        - name: "sushi_market_cap_volatility"
+        - name: "solana_market_cap_volatility"
+        - name: "dogecoin_market_cap_volatility"
+        - name: "cardano_market_cap_volatility"
+        - name: "litecoin_market_cap_volatility"
+        - name: "orca_market_cap_volatility"
+        - name: "ondo_finance_market_cap_volatility"
+        
+  
+
+  - name: coin_with_max_price_volatility
+    description: "Coin with the highest price volatility across all coins"
+    type: derived
+    label: "Coin With Max Price Volatility"
+    type_params:
+      expr: >
+        greatest_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE)
+        ]
+        )
+      metrics:
+        - name: "coredao_price_volatility"
+        - name: "bitcoin_price_volatility"
+        - name: "sui_price_volatility"
+        - name: "solayer_price_volatility"
+        - name: "chainlink_price_volatility"
+        - name: "uniswap_price_volatility"
+        - name: "deep_price_volatility"
+        - name: "ripple_price_volatility"
+        - name: "polkadot_price_volatility"
+        - name: "mocaverse_price_volatility"
+        - name: "bittorrent_price_volatility"
+        - name: "stellar_price_volatility"
+        - name: "ethereum_price_volatility"
+        - name: "sushi_price_volatility"
+        - name: "solana_price_volatility"
+        - name: "dogecoin_price_volatility"
+        - name: "cardano_price_volatility"
+        - name: "litecoin_price_volatility"
+        - name: "orca_price_volatility"
+        - name: "ondo_finance_price_volatility"
+        
+
+  - name: coin_with_min_price_volatility
+    description: "Coin with the least price volatility across all coins"
+    type: derived
+    label: "Coin With Min Price Volatility"
+    type_params:
+      expr: >
+        least_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE)
+        ]
+        )
+      metrics:
+        - name: "coredao_price_volatility"
+        - name: "bitcoin_price_volatility"
+        - name: "sui_price_volatility"
+        - name: "solayer_price_volatility"
+        - name: "chainlink_price_volatility"
+        - name: "uniswap_price_volatility"
+        - name: "deep_price_volatility"
+        - name: "ripple_price_volatility"
+        - name: "polkadot_price_volatility"
+        - name: "mocaverse_price_volatility"
+        - name: "bittorrent_price_volatility"
+        - name: "stellar_price_volatility"
+        - name: "ethereum_price_volatility"
+        - name: "sushi_price_volatility"
+        - name: "solana_price_volatility"
+        - name: "dogecoin_price_volatility"
+        - name: "cardano_price_volatility"
+        - name: "litecoin_price_volatility"
+        - name: "orca_price_volatility"
+        - name: "ondo_finance_price_volatility"
+        
+
+  - name: coin_with_min_market_cap_volatility
+    description: "Coin with the least market cap volatility across all coins"
+    type: derived
+    label: "Coin With Min Market Cap Volatility"
+    type_params:
+      expr: >
+        least_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE)
+        ]
+        )
+      metrics:
+        - name: "coredao_market_cap_volatility"
+        - name: "bitcoin_market_cap_volatility"
+        - name: "sui_market_cap_volatility"
+        - name: "solayer_market_cap_volatility"
+        - name: "chainlink_market_cap_volatility"
+        - name: "uniswap_market_cap_volatility"
+        - name: "deep_market_cap_volatility"
+        - name: "ripple_market_cap_volatility"
+        - name: "polkadot_market_cap_volatility"
+        - name: "mocaverse_market_cap_volatility"
+        - name: "bittorrent_market_cap_volatility"
+        - name: "stellar_market_cap_volatility"
+        - name: "ethereum_market_cap_volatility"
+        - name: "sushi_market_cap_volatility"
+        - name: "solana_market_cap_volatility"
+        - name: "dogecoin_market_cap_volatility"
+        - name: "cardano_market_cap_volatility"
+        - name: "litecoin_market_cap_volatility"
+        - name: "orca_market_cap_volatility"
+        - name: "ondo_finance_market_cap_volatility"
+        
+
+  - name: max_market_cap_growth_rate
+    description: "Maximum market cap growth rate"
+    type: derived
+    label: "Max Market Cap Growth Rate (%) Across Coins"
+    type_params:
+      expr: >
+        greatest(
+          coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate
+        )
+      metrics:
+        - name: "coredao_market_cap_growth_rate"
+        - name: "bitcoin_market_cap_growth_rate"
+        - name: "sui_market_cap_growth_rate"
+        - name: "solayer_market_cap_growth_rate"
+        - name: "chainlink_market_cap_growth_rate"
+        - name: "uniswap_market_cap_growth_rate"
+        - name: "deep_market_cap_growth_rate"
+        - name: "ripple_market_cap_growth_rate"
+        - name: "polkadot_market_cap_growth_rate"
+        - name: "mocaverse_market_cap_growth_rate"
+        - name: "bittorrent_market_cap_growth_rate"
+        - name: "stellar_market_cap_growth_rate"
+        - name: "ethereum_market_cap_growth_rate"
+        - name: "sushi_market_cap_growth_rate"
+        - name: "solana_market_cap_growth_rate"
+        - name: "dogecoin_market_cap_growth_rate"
+        - name: "cardano_market_cap_growth_rate"
+        - name: "litecoin_market_cap_growth_rate"
+        - name: "orca_market_cap_growth_rate"
+        - name: "ondo_finance_market_cap_growth_rate"
+        
+
+  - name: coin_with_max_market_cap_growth_rate
+    description: "Coin with the highest market cap growth rate across all coins"
+    type: derived
+    label: "Coin With Max Market Growth Rate Across Coins"
+    type_params:
+      expr: >
+        greatest_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_market_cap_growth_rate  as DOUBLE), cast(bitcoin_market_cap_growth_rate  as DOUBLE), cast(sui_market_cap_growth_rate  as DOUBLE), cast(solayer_market_cap_growth_rate  as DOUBLE), cast(chainlink_market_cap_growth_rate  as DOUBLE), cast(uniswap_market_cap_growth_rate  as DOUBLE), cast(deep_market_cap_growth_rate  as DOUBLE), cast(ripple_market_cap_growth_rate  as DOUBLE), cast(polkadot_market_cap_growth_rate  as DOUBLE), cast(mocaverse_market_cap_growth_rate  as DOUBLE), cast(bittorrent_market_cap_growth_rate  as DOUBLE), cast(stellar_market_cap_growth_rate  as DOUBLE), cast(ethereum_market_cap_growth_rate  as DOUBLE), cast(sushi_market_cap_growth_rate  as DOUBLE), cast(solana_market_cap_growth_rate  as DOUBLE), cast(dogecoin_market_cap_growth_rate  as DOUBLE), cast(cardano_market_cap_growth_rate  as DOUBLE), cast(litecoin_market_cap_growth_rate  as DOUBLE), cast(orca_market_cap_growth_rate  as DOUBLE), cast(ondo_finance_market_cap_growth_rate  as DOUBLE)
+        ]
+        )
+      metrics:
+        - name: "coredao_market_cap_growth_rate"
+        - name: "bitcoin_market_cap_growth_rate"
+        - name: "sui_market_cap_growth_rate"
+        - name: "solayer_market_cap_growth_rate"
+        - name: "chainlink_market_cap_growth_rate"
+        - name: "uniswap_market_cap_growth_rate"
+        - name: "deep_market_cap_growth_rate"
+        - name: "ripple_market_cap_growth_rate"
+        - name: "polkadot_market_cap_growth_rate"
+        - name: "mocaverse_market_cap_growth_rate"
+        - name: "bittorrent_market_cap_growth_rate"
+        - name: "stellar_market_cap_growth_rate"
+        - name: "ethereum_market_cap_growth_rate"
+        - name: "sushi_market_cap_growth_rate"
+        - name: "solana_market_cap_growth_rate"
+        - name: "dogecoin_market_cap_growth_rate"
+        - name: "cardano_market_cap_growth_rate"
+        - name: "litecoin_market_cap_growth_rate"
+        - name: "orca_market_cap_growth_rate"
+        - name: "ondo_finance_market_cap_growth_rate"
+        
+  
+  - name: min_market_cap_growth_rate
+    description: "Minimum market cap growth rate"
+    type: derived
+    label: "Min Market Cap Growth Rate (%) Across Coins"
+    type_params:
+     expr: >
+        least(
+        coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate
+        )
+     metrics:
+       - name: "coredao_market_cap_growth_rate"
+       - name: "bitcoin_market_cap_growth_rate"
+       - name: "sui_market_cap_growth_rate"
+       - name: "solayer_market_cap_growth_rate"
+       - name: "chainlink_market_cap_growth_rate"
+       - name: "uniswap_market_cap_growth_rate"
+       - name: "deep_market_cap_growth_rate"
+       - name: "ripple_market_cap_growth_rate"
+       - name: "polkadot_market_cap_growth_rate"
+       - name: "mocaverse_market_cap_growth_rate"
+       - name: "bittorrent_market_cap_growth_rate"
+       - name: "stellar_market_cap_growth_rate"
+       - name: "ethereum_market_cap_growth_rate"
+       - name: "sushi_market_cap_growth_rate"
+       - name: "solana_market_cap_growth_rate"
+       - name: "dogecoin_market_cap_growth_rate"
+       - name: "cardano_market_cap_growth_rate"
+       - name: "litecoin_market_cap_growth_rate"
+       - name: "orca_market_cap_growth_rate"
+       - name: "ondo_finance_market_cap_growth_rate"
+       
+
+  - name: coin_with_min_market_cap_growth_rate
+    description: "Coin with the lowest market cap growth rate across all coins"
+    type: derived
+    label: "Coin With Min Market Growth Rate Across Coins"
+    type_params:
+     expr: >
+        least_coin(
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ],
+        ARRAY[cast(coredao_market_cap_growth_rate as DOUBLE), cast(bitcoin_market_cap_growth_rate as DOUBLE), cast(sui_market_cap_growth_rate as DOUBLE), cast(solayer_market_cap_growth_rate as DOUBLE), cast(chainlink_market_cap_growth_rate as DOUBLE), cast(uniswap_market_cap_growth_rate as DOUBLE), cast(deep_market_cap_growth_rate as DOUBLE), cast(ripple_market_cap_growth_rate as DOUBLE), cast(polkadot_market_cap_growth_rate as DOUBLE), cast(mocaverse_market_cap_growth_rate as DOUBLE), cast(bittorrent_market_cap_growth_rate as DOUBLE), cast(stellar_market_cap_growth_rate as DOUBLE), cast(ethereum_market_cap_growth_rate as DOUBLE), cast(sushi_market_cap_growth_rate as DOUBLE), cast(solana_market_cap_growth_rate as DOUBLE), cast(dogecoin_market_cap_growth_rate as DOUBLE), cast(cardano_market_cap_growth_rate as DOUBLE), cast(litecoin_market_cap_growth_rate as DOUBLE), cast(orca_market_cap_growth_rate as DOUBLE), cast(ondo_finance_market_cap_growth_rate as DOUBLE)
+        ]
+        )
+     metrics:
+      - name: "coredao_market_cap_growth_rate"
+      - name: "bitcoin_market_cap_growth_rate"
+      - name: "sui_market_cap_growth_rate"
+      - name: "solayer_market_cap_growth_rate"
+      - name: "chainlink_market_cap_growth_rate"
+      - name: "uniswap_market_cap_growth_rate"
+      - name: "deep_market_cap_growth_rate"
+      - name: "ripple_market_cap_growth_rate"
+      - name: "polkadot_market_cap_growth_rate"
+      - name: "mocaverse_market_cap_growth_rate"
+      - name: "bittorrent_market_cap_growth_rate"
+      - name: "stellar_market_cap_growth_rate"
+      - name: "ethereum_market_cap_growth_rate"
+      - name: "sushi_market_cap_growth_rate"
+      - name: "solana_market_cap_growth_rate"
+      - name: "dogecoin_market_cap_growth_rate"
+      - name: "cardano_market_cap_growth_rate"
+      - name: "litecoin_market_cap_growth_rate"
+      - name: "orca_market_cap_growth_rate"
+      - name: "ondo_finance_market_cap_growth_rate"
+      

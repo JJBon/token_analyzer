@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: chainlink_history_semantic
+    description: "chainlink token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: chainlink_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: chainlink_current_price_usd
+        description: "Average chainlink current price in USD"
+        agg: average
+        expr: chainlink_current_price_usd
+      - name: chainlink_market_cap_usd
+        description: "Average chainlink market cap in USD"
+        agg: average
+        expr: chainlink_market_cap_usd
+      - name: chainlink_current_price_usd_sq
+        description: "Average squared chainlink current price in USD"
+        agg: average
+        expr: power(chainlink_current_price_usd, 2)
+      - name: chainlink_market_cap_usd_sq
+        description: "Average squared chainlink market cap in USD"
+        agg: average
+        expr: power(chainlink_market_cap_usd, 2)
+
+metrics:
+  - name: chainlink_average_price_usd
+    description: "chainlink - Average Price (USD)"
+    type: simple
+    label: "chainlink - Average Price (USD)"
+    type_params:
+      measure: chainlink_current_price_usd
+
+  - name: chainlink_average_price_usd_sq
+    description: "chainlink - Average Squared Price (USD²)"
+    type: simple
+    label: "chainlink - Average Squared Price (USD²)"
+    type_params:
+      measure: chainlink_current_price_usd_sq
+
+  - name: chainlink_average_market_cap_usd
+    description: "chainlink - Average Market Cap (USD)"
+    type: simple
+    label: "chainlink - Average Market Cap (USD)"
+    type_params:
+      measure: chainlink_market_cap_usd
+
+  - name: chainlink_average_market_cap_usd_sq
+    description: "chainlink - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "chainlink - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: chainlink_market_cap_usd_sq
+
+  - name: chainlink_price_variance
+    description: "chainlink - Variance of current price in USD"
+    type: derived
+    label: "chainlink Price Variance (USD)"
+    type_params:
+      expr: chainlink_average_price_usd_sq - (chainlink_average_price_usd * chainlink_average_price_usd)
+      metrics:
+        - name: chainlink_average_price_usd_sq
+        - name: chainlink_average_price_usd
+
+  - name: chainlink_market_cap_variance
+    description: "chainlink - Variance of market cap in USD"
+    type: derived
+    label: "chainlink Market Cap Variance (USD)"
+    type_params:
+      expr: chainlink_average_market_cap_usd_sq - (chainlink_average_market_cap_usd * chainlink_average_market_cap_usd)
+      metrics:
+        - name: chainlink_average_market_cap_usd_sq
+        - name: chainlink_average_market_cap_usd
+
+  - name: chainlink_price_volatility
+    description: "Coefficient of variation (volatility) for chainlink price"
+    type: derived
+    label: "chainlink Volatility (CV)"
+    type_params:
+      expr: "sqrt(chainlink_price_variance) / chainlink_average_price_usd"
+      metrics:
+        - name: chainlink_price_variance
+        - name: chainlink_average_price_usd
+
+  - name: chainlink_market_cap_volatility
+    description: "Coefficient of variation (volatility) for chainlink market cap"
+    type: derived
+    label: "chainlink Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt(chainlink_market_cap_variance), chainlink_average_market_cap_usd, 0)"
+      metrics:
+        - name: chainlink_market_cap_variance
+        - name: chainlink_average_market_cap_usd
+  
+  - name: chainlink_price_moving_average_7d
+    description: "7-day moving average of chainlink price"
+    type: cumulative
+    label: "chainlink Price Moving Average (7d)"
+    type_params:
+      measure: chainlink_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: chainlink_first_market_cap_usd
+    description: "First chainlink market cap value (USD) over the window"
+    type: cumulative
+    label: "chainlink First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: chainlink_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: chainlink_last_market_cap_usd
+    description: "Last chainlink market cap value (USD) over the window"
+    type: cumulative
+    label: "chainlink Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: chainlink_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: chainlink_market_cap_growth_rate
+    description: "chainlink - Market Cap Growth Rate (%)"
+    type: derived
+    label: "chainlink Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division(chainlink_last_market_cap_usd - chainlink_first_market_cap_usd, chainlink_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: chainlink_first_market_cap_usd
+        - name: chainlink_last_market_cap_usd

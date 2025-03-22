@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: warehouse_ethereum        # <-- "warehouse" must match the first argument in source("warehouse","market_chart")
+    database: warehouse    # or whatever your dbt-duckdb database is called
+    schema: ethereum            # your DuckDB schema
+    tables:
+      - name: market_chart # <-- "market_chart" must match the second argument in source("warehouse","market_chart")
+        identifier: market_chart
+  - name: warehouse_bitcoin        # <-- "warehouse" must match the first argument in source("warehouse","market_chart")
+    database: warehouse    # or whatever your dbt-duckdb database is called
+    schema: bitcoin        # your DuckDB schema
+    tables:
+      - name: market_chart # <-- "market_chart" must match the second argument in source("warehouse","market_chart")
+        identifier: market_chart

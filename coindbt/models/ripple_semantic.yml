@@ -1,0 +1,155 @@
+version: 2
+
+semantic_models:
+  - name: ripple_history_semantic
+    description: "ripple token historical data mart, with key details for each record."
+    defaults:
+      agg_time_dimension: date
+    model: ref('denorm_all_coins')
+    entities:
+      - name: ripple_token_daily
+        expr: "concat(id, '_', cast(date as varchar))"
+        type: primary
+    dimensions:
+      - name: date
+        type: time
+        expr: date
+        type_params:
+          time_granularity: day
+      - name: symbol
+        type: categorical
+      - name: name
+        type: categorical
+    measures:
+      - name: ripple_current_price_usd
+        description: "Average ripple current price in USD"
+        agg: average
+        expr: ripple_current_price_usd
+      - name: ripple_market_cap_usd
+        description: "Average ripple market cap in USD"
+        agg: average
+        expr: ripple_market_cap_usd
+      - name: ripple_current_price_usd_sq
+        description: "Average squared ripple current price in USD"
+        agg: average
+        expr: power(ripple_current_price_usd, 2)
+      - name: ripple_market_cap_usd_sq
+        description: "Average squared ripple market cap in USD"
+        agg: average
+        expr: power(ripple_market_cap_usd, 2)
+
+metrics:
+  - name: ripple_average_price_usd
+    description: "ripple - Average Price (USD)"
+    type: simple
+    label: "ripple - Average Price (USD)"
+    type_params:
+      measure: ripple_current_price_usd
+
+  - name: ripple_average_price_usd_sq
+    description: "ripple - Average Squared Price (USD²)"
+    type: simple
+    label: "ripple - Average Squared Price (USD²)"
+    type_params:
+      measure: ripple_current_price_usd_sq
+
+  - name: ripple_average_market_cap_usd
+    description: "ripple - Average Market Cap (USD)"
+    type: simple
+    label: "ripple - Average Market Cap (USD)"
+    type_params:
+      measure: ripple_market_cap_usd
+
+  - name: ripple_average_market_cap_usd_sq
+    description: "ripple - Average Squared Market Cap (USD²)"
+    type: simple
+    label: "ripple - Average Squared Market Cap (USD²)"
+    type_params:
+      measure: ripple_market_cap_usd_sq
+
+  - name: ripple_price_variance
+    description: "ripple - Variance of current price in USD"
+    type: derived
+    label: "ripple Price Variance (USD)"
+    type_params:
+      expr: ripple_average_price_usd_sq - (ripple_average_price_usd * ripple_average_price_usd)
+      metrics:
+        - name: ripple_average_price_usd_sq
+        - name: ripple_average_price_usd
+
+  - name: ripple_market_cap_variance
+    description: "ripple - Variance of market cap in USD"
+    type: derived
+    label: "ripple Market Cap Variance (USD)"
+    type_params:
+      expr: ripple_average_market_cap_usd_sq - (ripple_average_market_cap_usd * ripple_average_market_cap_usd)
+      metrics:
+        - name: ripple_average_market_cap_usd_sq
+        - name: ripple_average_market_cap_usd
+
+  - name: ripple_price_volatility
+    description: "Coefficient of variation (volatility) for ripple price"
+    type: derived
+    label: "ripple Volatility (CV)"
+    type_params:
+      expr: "sqrt(ripple_price_variance) / ripple_average_price_usd"
+      metrics:
+        - name: ripple_price_variance
+        - name: ripple_average_price_usd
+
+  - name: ripple_market_cap_volatility
+    description: "Coefficient of variation (volatility) for ripple market cap"
+    type: derived
+    label: "ripple Market Cap Volatility (CV)"
+    type_params:
+      expr: "safe_division(sqrt(ripple_market_cap_variance), ripple_average_market_cap_usd, 0)"
+      metrics:
+        - name: ripple_market_cap_variance
+        - name: ripple_average_market_cap_usd
+  
+  - name: ripple_price_moving_average_7d
+    description: "7-day moving average of ripple price"
+    type: cumulative
+    label: "ripple Price Moving Average (7d)"
+    type_params:
+      measure: ripple_current_price_usd
+      window: 7 days
+      # Optionally, if you want the accumulation to reset on a specific grain, you can add:
+      # grain_to_date: true
+
+    # Cumulative metric for the first market cap value over the chosen window (e.g. 1 year)
+  - name: ripple_first_market_cap_usd
+    description: "First ripple market cap value (USD) over the window"
+    type: cumulative
+    label: "ripple First Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first   # Defaults to first if omitted; here we make it explicit.
+      measure:
+        name: ripple_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last market cap value over the chosen window (e.g. 1 year)
+  - name: ripple_last_market_cap_usd
+    description: "Last ripple market cap value (USD) over the window"
+    type: cumulative
+    label: "ripple Last Market Cap (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last    # Uses the last value in the accumulation window.
+      measure:
+        name: ripple_market_cap_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the market cap growth rate using the first and last values.
+  - name: ripple_market_cap_growth_rate
+    description: "ripple - Market Cap Growth Rate (%)"
+    type: derived
+    label: "ripple Market Cap Growth Rate (%)"
+    type_params:
+      expr: "safe_division(ripple_last_market_cap_usd - ripple_first_market_cap_usd, ripple_first_market_cap_usd,0) * 100"
+      metrics:
+        - name: ripple_first_market_cap_usd
+        - name: ripple_last_market_cap_usd

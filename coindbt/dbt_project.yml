@@ -1,0 +1,48 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+
+
+name: 'coindbt'
+version: '1.0.0'
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'coindbt'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+vars:
+  truncate_timespan_to: "{{ current_timestamp() }}"
+  "dbt_date:time_zone": "America/Los_Angeles"
+  coins: "coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca"
+  COIN_METRICS_AVG_PRICE: "coalesce(cast(coredao_average_price_usd as DOUBLE), 0), coalesce(cast(bitcoin_average_price_usd as DOUBLE), 0), coalesce(cast(sui_average_price_usd as DOUBLE), 0), coalesce(cast(solayer_average_price_usd as DOUBLE), 0), coalesce(cast(chainlink_average_price_usd as DOUBLE), 0), coalesce(cast(uniswap_average_price_usd as DOUBLE), 0), coalesce(cast(deep_average_price_usd as DOUBLE), 0)"
+  COIN_METRICS_PRICE_VOLATILITY: "coalesce(cast(coredao_price_volatility as DOUBLE), 0), coalesce(cast(bitcoin_price_volatility as DOUBLE), 0), coalesce(cast(sui_price_volatility as DOUBLE), 0), coalesce(cast(solayer_price_volatility as DOUBLE), 0), coalesce(cast(chainlink_price_volatility as DOUBLE), 0), coalesce(cast(uniswap_price_volatility as DOUBLE), 0), coalesce(cast(deep_price_volatility as DOUBLE), 0)"
+  COIN_METRICS_MCAP_VOLATILITY: "coalesce(cast(coredao_market_cap_volatility as DOUBLE), 0), coalesce(cast(bitcoin_market_cap_volatility as DOUBLE), 0), coalesce(cast(sui_market_cap_volatility as DOUBLE), 0), coalesce(cast(solayer_market_cap_volatility as DOUBLE), 0), coalesce(cast(chainlink_market_cap_volatility as DOUBLE), 0), coalesce(cast(uniswap_market_cap_volatility as DOUBLE), 0), coalesce(cast(deep_market_cap_volatility as DOUBLE), 0)"
+
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+# In this example config, we tell dbt to build all models in the example/
+# directory as views. These settings can be overridden in the individual model
+# files using the `{{ config(...) }}` macro.
+
+models:
+  coindbt:
+    # Config indicated by + and applies to all files under models/example/
+    example:
+      +materialized: view

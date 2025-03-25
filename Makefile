@@ -42,15 +42,15 @@ $(MODELS_DIR)/%_semantic.yml: $(MODELS_DIR)/denorm_%_history.sql semantic_templa
 
 DENORM_TARGETS := $(patsubst %, $(MODELS_DIR)/denorm_%_history.sql, $(SAFE_COIN_LIST))
 
+# Corrected generate-denorm rule
 generate-denorm: setup-env $(DENORM_TARGETS)
 	@echo "All per-coin denormalized model files generated/overwritten."
 
 $(MODELS_DIR)/denorm_%_history.sql: denorm_template.sql
 	@echo "Generating denorm file for coin: $*"
 	mkdir -p $(MODELS_DIR)
-	# Ensure that COIN is safe for SQL (converted to use underscores)
-	safe_coin := $(subst -,_, $*)
-	sed 's/{{COIN}}/$(safe_coin)/g' denorm_template.sql > $@
+	safe_coin=$$(echo "$*" | sed 's/-/_/g'); \
+	sed "s/{{COIN}}/$$safe_coin/g" denorm_template.sql > $@
 	@echo "Created/overwritten $@ from template."
 
 generate-denorm-all-coins: setup-env $(MODELS_DIR)/denorm_all_coins.sql
@@ -77,21 +77,25 @@ download: setup-env
 	@echo "Downloading coin data for coins: $(COINS)..."
 	./$(VENV_DIR)/bin/python fetch_coin_history.py --coins $(COINS)
 
-dbt-run: setup-env
+dbt-deps: setup-env
+	@echo "Installing dbt package dependencies..."
+	@cd $(DBT_DIR) && ../$(VENV_DIR)/bin/dbt deps
+
+dbt-run: dbt-deps
 	@echo "Running dbt models..."
 	@cd $(DBT_DIR) && \
 	if [ -f dbt_project.yml ]; then \
-		dbt run --profiles-dir $$DBT_PROFILES_DIR; \
+		../$(VENV_DIR)/bin/dbt run --profiles-dir $$DBT_PROFILES_DIR; \
 	else \
 		echo "Error: No dbt_project.yml found at $(DBT_DIR)/dbt_project.yml"; \
 		exit 1; \
 	fi
 
-dbt-docs: setup-env
+dbt-docs: dbt-deps
 	@echo "Generating dbt documentation..."
 	@cd $(DBT_DIR) && \
 	if [ -f dbt_project.yml ]; then \
-		dbt docs generate; \
+		../$(VENV_DIR)/bin/dbt docs generate; \
 	else \
 		echo "Error: No dbt_project.yml found at $(DBT_DIR)/dbt_project.yml"; \
 		exit 1; \

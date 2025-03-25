@@ -1,3 +1,8 @@
+{{ config(
+    materialized='table',
+    unique_key='date'
+) }}
+
 {% set coin_list = var('coins', 'bitcoin,sui').split(',') %}
 
 with

@@ -7,6 +7,12 @@ import subprocess
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+from functools import lru_cache
+from queue import Queue
+import time
+import asyncio
+import aiofiles
+from asyncio.subprocess import PIPE, create_subprocess_exec
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -14,6 +20,78 @@ logging.basicConfig(
     stream=sys.stderr
 )
 
+
+
+class AsyncMetricProcessor:
+    def __init__(self, project_dir, manifest_path):
+        self.project_dir = project_dir
+        self.manifest_path = manifest_path
+        self.manifest_metrics = {}
+
+    async def load_manifest_metrics(self):
+        if os.path.exists(self.manifest_path):
+            async with aiofiles.open(self.manifest_path, mode='r') as f:
+                content = await f.read()
+                manifest = json.loads(content)
+                self.manifest_metrics = manifest.get("metrics", {})
+        else:
+            logging.warning("manifest.json not found at path: %s", self.manifest_path)
+
+    async def run_subprocess(self, *args):
+        proc = await create_subprocess_exec(
+            *args,
+            cwd=self.project_dir,
+            stdout=PIPE,
+            stderr=PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError(f"Command {' '.join(args)} failed: {stderr.decode()}")
+        return stdout.decode()
+
+    async def fetch_dimensions_for_metric(self, metric_name: str):
+        try:
+            result = await self.run_subprocess("mf", "list", "dimensions", "--metrics", metric_name)
+        except Exception as e:
+            logging.warning(f"MetricFlow failed for {metric_name}: {e}")
+            return []
+
+        lines = result.strip().split("\n")
+        return [line.replace("\u2022", "").strip() for line in lines if line.strip() and not line.startswith("\u2714")]  # • = bullet
+
+    async def process_metric(self, unique_id, metric_info):
+        metric_name = metric_info.get("name", "unknown_metric")
+        manifest_def = self.manifest_metrics.get(unique_id, {})
+        description = manifest_def.get("description") or metric_info.get("description", "")
+        dimensions = await self.fetch_dimensions_for_metric(metric_name)
+        return {
+            "name": metric_name,
+            "description": description,
+            "dimensions": dimensions,
+        }
+
+    async def build_metrics_cache(self, metrics_from_ls):
+        await self.load_manifest_metrics()
+        logging.info(f"Processing {len(metrics_from_ls)} metrics asynchronously...")
+
+        tasks = [
+            self.process_metric(uid, info)
+            for uid, info in metrics_from_ls.items()
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        metrics_list = []
+        for res in results:
+            if isinstance(res, Exception):
+                logging.error(f"Metric processing failed: {res}")
+            else:
+                metrics_list.append(res)
+
+        logging.info(f"Finished processing {len(metrics_list)} metrics.")
+        return {"metrics": metrics_list}
+
+    def build_metrics_cache_sync(self, metrics_from_ls):
+        return asyncio.run(self.build_metrics_cache(metrics_from_ls))
 #######################################
 # Minimal dbtCoreClient Stub with Lazy Asynchronous Metrics Cache
 #######################################
@@ -52,46 +130,8 @@ class DBTCoreClient:
                 self._cache_loading = False
 
     def _build_metrics_cache(self):
-        logging.info("Building metrics cache...")
-        # 1) Gather all metrics from dbt ls
-        metrics_from_ls = self._get_all_metrics_info()
-
-        # 2) Load manifest.json (for better descriptions, etc.)
-        manifest_data = {}
-        if os.path.exists(self.manifest_path):
-            with open(self.manifest_path, "r") as f:
-                manifest_data = json.load(f)
-        else:
-            logging.warning("No manifest.json found. Run dbt compile or dbt build first.")
-
-        manifest_metrics = manifest_data.get("metrics", {})
-
-        # 3) Use a thread pool to concurrently fetch dimensions for each metric
-        def process_metric(unique_id, metric_info):
-            metric_name = metric_info.get("name", "unknown_metric")
-            manifest_def = manifest_metrics.get(unique_id, {})
-            description = manifest_def.get("description") or metric_info.get("description", "")
-            dimensions = self._fetch_dimensions_for_metric(metric_name)
-            return {
-                "name": metric_name,
-                "description": description,
-                "dimensions": dimensions,
-            }
-
-        metrics_list = []
-        with ThreadPoolExecutor() as executor:
-            future_to_uid = {executor.submit(process_metric, uid, info): uid for uid, info in metrics_from_ls.items()}
-            for future in as_completed(future_to_uid):
-                try:
-                    result = future.result()
-                    metrics_list.append(result)
-                except Exception as e:
-                    uid = future_to_uid[future]
-                    logging.error(f"Error processing metric {uid}: {e}")
-
-        # 4) Store the results in our cache.
-        self._metrics_cache = {"metrics": metrics_list}
-        logging.info("Metrics cache built successfully.")
+        processor = AsyncMetricProcessor(self.project_dir, self.manifest_path)
+        self._metrics_cache = processor.build_metrics_cache_sync(self._get_all_metrics_info())
 
     def _get_all_metrics_info(self):
         logging.info("Fetching metrics from dbt with `dbt ls`...")
@@ -121,6 +161,7 @@ class DBTCoreClient:
                 metrics_map[unique_id] = metric_data
         return metrics_map
 
+    @lru_cache(maxsize=128)
     def _fetch_dimensions_for_metric(self, metric_name: str):
         command = ["mf", "list", "dimensions", "--metrics", metric_name]
         logging.info(f"Running: {command}")

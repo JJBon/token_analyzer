@@ -7,3 +7,6 @@ dbt-metricflow==0.8.1
 dbt-semantic-interfaces==0.7.4
 dotenv
 requests
+crewai
+flask
+aiofiles

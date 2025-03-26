@@ -518,6 +518,8 @@ def build_error_response(request_id, code, message):
         "error": {
             "code": code,
             "message": message
+        }
+    }
        
 
 def main():

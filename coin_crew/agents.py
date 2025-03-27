@@ -2,9 +2,13 @@
 from crewai import Agent
 from crewai.tools import BaseTool
 import requests
-from llm_config import openai_gpt4,  ollama_llama2, openai_gpt35
+from llm_config import openai_gpt4,  ollama_llama2, openai_gpt35, bedrock_llm
 from typing import Dict, List, Optional
 from pydantic import  BaseModel, PrivateAttr
+import json
+from typing import Type
+from typing import Union
+
 
 # Define a custom tool for the Data Engineer to fetch data from CoinGecko API
 class CoinGeckoAPITool(BaseTool):
@@ -55,16 +59,61 @@ semantic_layer_agent = Agent(
     tools=[]  # This agent might not need external tools; it generates config files.
 )
 
-# agents.py (continued)
-class SemanticQueryTool(BaseTool):
-    name: str = "SemanticQuery"
-    description: str = (
-        "Query the dbt semantic layer via MCP (create_query and fetch_result)."
-    )
 
-    # Mark these as private attributes so Pydantic doesn't complain
-    _mcp_url: str = PrivateAttr()
-    _headers: dict = PrivateAttr()
+# ============================
+# SCHEMAS
+# ============================
+
+class CreateQueryToolSchema(BaseModel):
+    metrics: List[Dict[str, str]]  # each item => { "name": "some_metric" }
+    groupBy: Optional[List[Dict[str, str]]] = None
+    where: Optional[List[Dict[str, str]]] = None
+    limit: Optional[int] = None
+    orderBy: List[Dict[str, str]]= None
+
+class FetchQueryResultToolSchema(BaseModel):
+    query_id: str
+
+# ============================
+# TOOLS
+# ============================
+class FetchMetricsTool(BaseTool):
+    name: str = "FetchMetrics"
+    description: str = "Fetch a list of available metrics and their descriptions."
+
+    def __init__(self, mcp_url: str):
+        super().__init__()
+        self._mcp_url = mcp_url
+        self._headers = {"Content-Type": "application/json"}
+
+    def _run(self):
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {"name": "fetch_metrics", "arguments": {}}
+        }
+
+        try:
+            response = requests.post(self._mcp_url, json=payload, headers=self._headers)
+            response.raise_for_status()
+            result = response.json().get("result", {}).get("content", [{}])[0]
+            text_content = result.get("text")
+
+            if not text_content:
+                return {"error": "'text' field missing in response content"}
+
+            parsed = json.loads(text_content)
+            return {"metrics": parsed.get("metrics", [])}
+
+        except Exception as e:
+            return {"error": f"[FetchMetricsTool] Error: {e}"}
+
+
+class CreateQueryTool(BaseTool):
+    name: str = "CreateQuery"
+    description: str = "Create a query given metrics, groupBy, and filters."
+    args_schema: Type[BaseModel] = CreateQueryToolSchema
 
     def __init__(self, mcp_url: str):
         super().__init__()
@@ -73,67 +122,114 @@ class SemanticQueryTool(BaseTool):
 
     def _run(
         self,
-        metric_name: str,                    # <--- typed
-        dimensions: Optional[List[str]] = None,
-        filters: Optional[List[str]] = None
+        metrics: List[Dict[str, str]],  # each item => { "name": "some_metric" }
+        groupBy: Optional[List[Dict[str, str]]] = None,
+        where: Optional[List[Dict[str, str]]] = None,
+        limit: Optional[int] = None,
+        orderBy: List[Dict[str, str]]= None
     ):
-        """
-        CrewAI sees this signature and knows it needs:
-        {
-          "metric_name": string,
-          "dimensions": array of strings,
-          "filters": array of strings
-        }
-        """
-        # 1) Build JSON-RPC payload
-        params = {"metrics": [metric_name]}
-        if dimensions:
-            params["dimensions"] = dimensions
-        if filters:
-            params["filters"] = filters
+        # Normalize metrics to list of dicts
+        formatted_metrics = [
+            {"name": m} if isinstance(m, str) else m for m in metrics
+        ]
+
         payload = {
             "jsonrpc": "2.0",
-            "id": 1,
-            "method": "create_query",
-            "params": params
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "create_query",
+                "arguments": {
+                    "metrics": formatted_metrics,
+                    "groupBy": groupBy or [],
+                    "where": where or [],
+                    "limit": limit,
+                    "orderBy": orderBy or []
+                }
+            }
         }
-        # 2) Create query
-        res = requests.post(self._mcp_url, json=payload, headers=self._headers).json()
-        query_id = res.get("result", {}).get("query_id")
-        if not query_id:
-            raise ValueError(f"Query creation failed: {res}")
 
-        # 3) Poll fetch_query_result
-        result = None
-        fetch_payload = {
+        try:
+            response = requests.post(self._mcp_url, json=payload, headers=self._headers)
+            response.raise_for_status()
+            content = response.json().get("result", {}).get("content", [{}])[0]
+            if "text" in content:
+                return json.loads(content["text"])
+            return {"error": "[CreateQueryTool] Unexpected response format", "raw_response": content}
+        except Exception as e:
+            return {"error": f"[CreateQueryTool] Error: {e}"}
+            
+
+class FetchQueryResultTool(BaseTool):
+    name: str = "FetchQueryResult"
+    description: str = "Fetch the results of a query using a query ID."
+    args_schema: Type[BaseModel] = FetchQueryResultToolSchema
+
+    def __init__(self, mcp_url: str):
+        super().__init__()
+        self._mcp_url = mcp_url
+        self._headers = {"Content-Type": "application/json"}
+
+    def _run(self, query_id: str):
+        payload = {
             "jsonrpc": "2.0",
-            "id": 2,
-            "method": "fetch_query_result",
-            "params": {"query_id": query_id}
+            "id": 5,
+            "method": "tools/call",
+            "params": {
+                "name": "fetch_query_result",
+                "arguments": {"queryId": query_id}
+            }
         }
-        for _ in range(10):
-            result_res = requests.post(
-                self._mcp_url, 
-                json=fetch_payload, 
-                headers=self._headers
-            ).json()
-            result = result_res.get("result", {})
-            if result.get("status") == "SUCCESSFUL":
-                break
-        return result
 
-    async def _arun(self, *args, **kwargs):
-        """If CrewAI tries to call your tool in an async context, you need this too."""
-        raise NotImplementedError("Async usage not implemented for SemanticQueryTool")
+        try:
+            response = requests.post(self._mcp_url, json=payload, headers=self._headers)
+            response.raise_for_status()
+
+            # Extract and decode the inner result
+            raw_text = response.json().get("result", {}).get("content", [{}])[0].get("text", "")
+            if not raw_text:
+                return {"error": "[FetchQueryResultTool] No text field in response content"}
+
+            parsed = json.loads(raw_text)
+            return {
+                "status": parsed.get("status"),
+                "results": parsed.get("results", []),
+                "error": parsed.get("error")
+            }
+
+        except Exception as e:
+            return {"error": f"[FetchQueryResultTool] Error: {e}"}
+
+
 
 # Instantiate BI agent with the semantic query tool
 MCP_SERVER_URL = "http://localhost:8000/mcp"  # Example URL for MCP server
+tools=[
+        FetchMetricsTool(MCP_SERVER_URL),
+        CreateQueryTool(MCP_SERVER_URL),
+        FetchQueryResultTool(MCP_SERVER_URL),
+    ]
+
+
 bi_agent = Agent(
     role="Business Intelligence Analyst",
-    goal="Analyze the metric data and recommend which coins to invest in.",
-    backstory=("A data analyst who uses metrics to drive investment decisions. "
-               "Can query the semantic layer for metrics and interpret the results."),
-    llm=openai_gpt35,
-    tools=[SemanticQueryTool(MCP_SERVER_URL)]
-)
+    goal=(
+        "Analyze and interpret metric data for executive decision-making. "
+        "Generate queries using the CreateQuery tool, and extract meaningful patterns from the result."
+    ),
+    llm=bedrock_llm,
+    backstory=(
+        "You are a data-savvy analyst with strong knowledge of the dbt Semantic Layer. "
+        "Your job is to create accurate queries and interpret results clearly and concisely."
+    ),
+    verbose=True,
+    allow_delegation=False,
+    tools=tools,
+    system_message = (
+    'When using the `CreateQuery` tool, ALWAYS follow this exact format:\n\n'
+    '"{\"metrics\": [{\"name\": \"coin_with_max_market_cap_volatility}], \"groupBy\": [{\"name\": \"metric_time__month\"}],\"orderBy\": [{\"name\": \"metric_time__month\"}]}"\n\n'
+    '❌ Do NOT include descriptions, types, or use JSON schema-like structures.\n'
+    '✅ Only provide direct, valid argument values for the tool call.'
+    )
 
+)

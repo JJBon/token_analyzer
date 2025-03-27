@@ -84,17 +84,21 @@ exececute_query = Task(
     agent=bi_agent,
 )
 
-
-
 gen_task = ("Use the `CreateQueryTool` to generate a query using the metrics "
         "`coin_with_max_market_cap_volatility` and `max_market_cap_volatility_all_coins`, "
         "grouped by `metric_time__month`. Then, use the `FetchQueryResultTool` to retrieve results. "
         "Analyze the results and identify the coin with the highest volatility for any given month. "
         "Return that coin, the month, and the volatility value in your final answer.")
 
+gen_task = ("Use the `FetchMetricsTool` to check available metrics "
+        "Select metrics relevant to the user query"
+        "Create query with relevant metrics"
+        "Execute query"
+        "Analyze the results and gather business insights")
+
 task = Task(
     description=gen_task,
-    expected_output="Do trend analisis for the volatilities on the last 10 months"
+    expected_output="Do trend analisis for the volatilities in price and market caps of all coins on the last 10 months"
         "Explain what this might mean for a potential investor.",
     agent=bi_agent
 )

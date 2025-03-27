@@ -10,3 +10,7 @@ requests
 crewai
 flask
 aiofiles
+pandas 
+statsmodels
+pmdarima
+boto3

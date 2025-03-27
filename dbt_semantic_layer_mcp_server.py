@@ -7,12 +7,6 @@ import subprocess
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-from functools import lru_cache
-from queue import Queue
-import time
-import asyncio
-import aiofiles
-from asyncio.subprocess import PIPE, create_subprocess_exec
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -20,78 +14,6 @@ logging.basicConfig(
     stream=sys.stderr
 )
 
-
-
-class AsyncMetricProcessor:
-    def __init__(self, project_dir, manifest_path):
-        self.project_dir = project_dir
-        self.manifest_path = manifest_path
-        self.manifest_metrics = {}
-
-    async def load_manifest_metrics(self):
-        if os.path.exists(self.manifest_path):
-            async with aiofiles.open(self.manifest_path, mode='r') as f:
-                content = await f.read()
-                manifest = json.loads(content)
-                self.manifest_metrics = manifest.get("metrics", {})
-        else:
-            logging.warning("manifest.json not found at path: %s", self.manifest_path)
-
-    async def run_subprocess(self, *args):
-        proc = await create_subprocess_exec(
-            *args,
-            cwd=self.project_dir,
-            stdout=PIPE,
-            stderr=PIPE
-        )
-        stdout, stderr = await proc.communicate()
-        if proc.returncode != 0:
-            raise RuntimeError(f"Command {' '.join(args)} failed: {stderr.decode()}")
-        return stdout.decode()
-
-    async def fetch_dimensions_for_metric(self, metric_name: str):
-        try:
-            result = await self.run_subprocess("mf", "list", "dimensions", "--metrics", metric_name)
-        except Exception as e:
-            logging.warning(f"MetricFlow failed for {metric_name}: {e}")
-            return []
-
-        lines = result.strip().split("\n")
-        return [line.replace("\u2022", "").strip() for line in lines if line.strip() and not line.startswith("\u2714")]  # • = bullet
-
-    async def process_metric(self, unique_id, metric_info):
-        metric_name = metric_info.get("name", "unknown_metric")
-        manifest_def = self.manifest_metrics.get(unique_id, {})
-        description = manifest_def.get("description") or metric_info.get("description", "")
-        dimensions = await self.fetch_dimensions_for_metric(metric_name)
-        return {
-            "name": metric_name,
-            "description": description,
-            "dimensions": dimensions,
-        }
-
-    async def build_metrics_cache(self, metrics_from_ls):
-        await self.load_manifest_metrics()
-        logging.info(f"Processing {len(metrics_from_ls)} metrics asynchronously...")
-
-        tasks = [
-            self.process_metric(uid, info)
-            for uid, info in metrics_from_ls.items()
-        ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        metrics_list = []
-        for res in results:
-            if isinstance(res, Exception):
-                logging.error(f"Metric processing failed: {res}")
-            else:
-                metrics_list.append(res)
-
-        logging.info(f"Finished processing {len(metrics_list)} metrics.")
-        return {"metrics": metrics_list}
-
-    def build_metrics_cache_sync(self, metrics_from_ls):
-        return asyncio.run(self.build_metrics_cache(metrics_from_ls))
 #######################################
 # Minimal dbtCoreClient Stub with Lazy Asynchronous Metrics Cache
 #######################################
@@ -130,8 +52,46 @@ class DBTCoreClient:
                 self._cache_loading = False
 
     def _build_metrics_cache(self):
-        processor = AsyncMetricProcessor(self.project_dir, self.manifest_path)
-        self._metrics_cache = processor.build_metrics_cache_sync(self._get_all_metrics_info())
+        logging.info("Building metrics cache...")
+        # 1) Gather all metrics from dbt ls
+        metrics_from_ls = self._get_all_metrics_info()
+
+        # 2) Load manifest.json (for better descriptions, etc.)
+        manifest_data = {}
+        if os.path.exists(self.manifest_path):
+            with open(self.manifest_path, "r") as f:
+                manifest_data = json.load(f)
+        else:
+            logging.warning("No manifest.json found. Run dbt compile or dbt build first.")
+
+        manifest_metrics = manifest_data.get("metrics", {})
+
+        # 3) Use a thread pool to concurrently fetch dimensions for each metric
+        def process_metric(unique_id, metric_info):
+            metric_name = metric_info.get("name", "unknown_metric")
+            manifest_def = manifest_metrics.get(unique_id, {})
+            description = manifest_def.get("description") or metric_info.get("description", "")
+            dimensions = self._fetch_dimensions_for_metric(metric_name)
+            return {
+                "name": metric_name,
+                "description": description,
+                "dimensions": dimensions,
+            }
+
+        metrics_list = []
+        with ThreadPoolExecutor() as executor:
+            future_to_uid = {executor.submit(process_metric, uid, info): uid for uid, info in metrics_from_ls.items()}
+            for future in as_completed(future_to_uid):
+                try:
+                    result = future.result()
+                    metrics_list.append(result)
+                except Exception as e:
+                    uid = future_to_uid[future]
+                    logging.error(f"Error processing metric {uid}: {e}")
+
+        # 4) Store the results in our cache.
+        self._metrics_cache = {"metrics": metrics_list}
+        logging.info("Metrics cache built successfully.")
 
     def _get_all_metrics_info(self):
         logging.info("Fetching metrics from dbt with `dbt ls`...")
@@ -161,7 +121,6 @@ class DBTCoreClient:
                 metrics_map[unique_id] = metric_data
         return metrics_map
 
-    @lru_cache(maxsize=128)
     def _fetch_dimensions_for_metric(self, metric_name: str):
         command = ["mf", "list", "dimensions", "--metrics", metric_name]
         logging.info(f"Running: {command}")
@@ -209,45 +168,60 @@ class DBTCoreClient:
                 "results": [],
                 "error": f"No query found for ID: {query_id}"
             }
+
         query_params = self._query_store[query_id]
         metrics_list = query_params.get("metrics", [])
-        group_bys = query_params.get("groupBy", [])
-        filters = query_params.get("where", [])
+        group_bys = query_params.get("groupBy", []) or query_params.get("dimensions", [])
+        filters = query_params.get("where", []) or query_params.get("filters", [])
         limit = query_params.get("limit", None)
+
         command = ["mf", "query"]
+
+        # ✅ Add --metrics argument
         if metrics_list:
-            metric_names = [m["name"] for m in metrics_list]
-            command.append("--metrics")
-            command.append(",".join(metric_names))
+            metric_names = [m["name"] for m in metrics_list if "name" in m]
+            if metric_names:
+                command.extend(["--metrics", ",".join(metric_names)])
+            else:
+                return {
+                    "queryId": query_id,
+                    "status": "ERROR",
+                    "results": [],
+                    "error": "No valid metric names found in query parameters"
+                }
+        else:
+            return {
+                "queryId": query_id,
+                "status": "ERROR",
+                "results": [],
+                "error": "Missing metrics in query parameters"
+            }
+
+        # Optional: add --group-by
         if group_bys:
-            transformed_dims = []
-            for g in group_bys:
-                dim_name = g["name"]
-                transformed_dims.append(dim_name)
-            command.append("--group-by")
-            command.append(",".join(transformed_dims))
+            dim_names = [g["name"] for g in group_bys if "name" in g]
+            if dim_names:
+                command.extend(["--group-by", ",".join(dim_names)])
+
+        # Optional: add --where
         if filters:
             filter_strs = []
             for f in filters:
                 raw_sql = f.get("sql", "")
-                if not raw_sql:
-                    continue
-                if "Dimension(" not in raw_sql:
-                    raw_sql = raw_sql.replace(
-                        "product__product_name",
-                        "{{ Dimension('product__product_name') }}"
-                    )
-                filter_strs.append(raw_sql)
+                if raw_sql:
+                    filter_strs.append(raw_sql)
             if filter_strs:
-                combined_where = " and ".join(filter_strs)
-                command.append("--where")
-                command.append(combined_where)
+                command.extend(["--where", " and ".join(filter_strs)])
+
+        # Optional: add --limit
         if limit is not None:
-            command.append("--limit")
-            command.append(str(limit))
-        command.append("--csv")
-        command.append("-")
+            command.extend(["--limit", str(limit)])
+
+        # Required for output
+        command.extend(["--csv", "-"])
+
         logging.info(f"Submitting MetricFlow command: {command}")
+
         try:
             result = subprocess.run(
                 command,
@@ -256,6 +230,7 @@ class DBTCoreClient:
                 text=True,
                 check=False
             )
+
             if result.returncode != 0:
                 return {
                     "queryId": query_id,
@@ -263,23 +238,43 @@ class DBTCoreClient:
                     "results": [],
                     "error": f"Command failed with code {result.returncode}: {result.stderr}"
                 }
+
             lines = result.stdout.strip().split("\n")
-            reader = csv.DictReader(lines)
+
+            # 🧹 Filter out spinner/log lines
+            filtered_lines = [
+                line for line in lines
+                if line and not any(sub in line for sub in ["⠋", "✔", "🖨", "Initiating query", "Success", "written query"])
+            ]
+
+            # If no actual CSV lines remain, return empty results
+            if not filtered_lines:
+                return {
+                    "queryId": query_id,
+                    "status": "SUCCESSFUL",
+                    "results": [],
+                    "error": None
+                }
+
+            reader = csv.DictReader(filtered_lines)
             rows = list(reader)
+
             return {
                 "queryId": query_id,
                 "status": "SUCCESSFUL",
                 "results": rows,
                 "error": None
             }
+
         except Exception as e:
-            logging.error(f"error with processing {result.stderr}")
+            logging.exception("Unexpected error running query")
             return {
                 "queryId": query_id,
                 "status": "ERROR",
                 "results": [],
                 "error": str(e)
             }
+
 
     def _find_dimensions_for_metric(self, metric_name: str):
         if not self._metrics_cache:

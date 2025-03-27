@@ -10,8 +10,8 @@ with
     {{ coin }} as (
         select
             date,
-            current_price_usd as {{ coin }}_price,
-            market_cap_usd as {{ coin }}_market_cap
+            current_price_usd as {{ coin }}_current_price_usd,
+            market_cap_usd as {{ coin }}_market_cap_usd
         from {{ ref('denorm_' ~ coin ~ '_history') }}
     ){% if not loop.last %},{% endif %}
 {% endfor %},
@@ -24,8 +24,8 @@ base as (
 select
     base.date,
     {% for coin in coin_list %}
-      {{ coin }}.{{ coin }}_price,
-      {{ coin }}.{{ coin }}_market_cap{% if not loop.last %},{% endif %}
+      {{ coin }}.{{ coin }}_current_price_usd,
+      {{ coin }}.{{ coin }}_market_cap_usd{% if not loop.last %},{% endif %}
     {% endfor %}
 from base
     {% for coin in coin_list %}

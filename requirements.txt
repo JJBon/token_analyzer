@@ -10,3 +10,4 @@ requests
 crewai
 flask
 aiofiles
+pandas

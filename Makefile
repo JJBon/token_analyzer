@@ -101,5 +101,8 @@ dbt-docs: dbt-deps
 		exit 1; \
 	fi
 
+test_agents: setup-env
+	PYTHONPATH=$(CURDIR)/coin_crew pytest coin_crew/tests/db
+
 all: download generate-denorm generate-denorm-all-coins generate-semantics generate-all-coins-metrics dbt-run dbt-docs
 	@echo "All tasks including virtual environment setup and installation of requirements completed."

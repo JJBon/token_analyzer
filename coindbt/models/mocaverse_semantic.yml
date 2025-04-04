@@ -92,7 +92,7 @@ metrics:
     type: derived
     label: "mocaverse Volatility (CV)"
     type_params:
-      expr: "sqrt(mocaverse_price_variance) / mocaverse_average_price_usd"
+      expr: "sqrt(greatest(0, mocaverse_price_variance)) / mocaverse_average_price_usd"
       metrics:
         - name: mocaverse_price_variance
         - name: mocaverse_average_price_usd
@@ -102,7 +102,7 @@ metrics:
     type: derived
     label: "mocaverse Market Cap Volatility (CV)"
     type_params:
-      expr: "safe_division(sqrt(mocaverse_market_cap_variance), mocaverse_average_market_cap_usd, 0)"
+      expr: "safe_division(sqrt(greatest(mocaverse_market_cap_variance, 0)), mocaverse_average_market_cap_usd, 0)"
       metrics:
         - name: mocaverse_market_cap_variance
         - name: mocaverse_average_market_cap_usd
@@ -153,3 +153,40 @@ metrics:
       metrics:
         - name: mocaverse_first_market_cap_usd
         - name: mocaverse_last_market_cap_usd
+
+# Cumulative metric for the first price value over the chosen window (e.g. 1 year)
+  - name: mocaverse_first_price_usd
+    description: "First mocaverse price value (USD) over the window"
+    type: cumulative
+    label: "mocaverse First Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first  # Takes the first record in the window
+      measure:
+        name: mocaverse_current_price_usd       # This must match your measure's name in the model
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last price value over the chosen window (e.g. 1 year)
+  - name: mocaverse_last_price_usd
+    description: "Last mocaverse price value (USD) over the window"
+    type: cumulative
+    label: "mocaverse Last Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last   # Takes the last record in the window
+      measure:
+        name: mocaverse_current_price_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the price growth rate using the first and last values.
+  - name: mocaverse_price_growth_rate
+    description: "mocaverse - Price Growth Rate (%)"
+    type: derived
+    label: "mocaverse Price Growth Rate (%)"
+    type_params:
+      expr: "safe_division(mocaverse_last_price_usd - mocaverse_first_price_usd, mocaverse_first_price_usd, 0) * 100"
+      metrics:
+        - name: mocaverse_first_price_usd
+        - name: mocaverse_last_price_usd

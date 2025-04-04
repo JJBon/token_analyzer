@@ -92,7 +92,7 @@ metrics:
     type: derived
     label: "sui Volatility (CV)"
     type_params:
-      expr: "sqrt(sui_price_variance) / sui_average_price_usd"
+      expr: "sqrt(greatest(0, sui_price_variance)) / sui_average_price_usd"
       metrics:
         - name: sui_price_variance
         - name: sui_average_price_usd
@@ -102,7 +102,7 @@ metrics:
     type: derived
     label: "sui Market Cap Volatility (CV)"
     type_params:
-      expr: "safe_division(sqrt(sui_market_cap_variance), sui_average_market_cap_usd, 0)"
+      expr: "safe_division(sqrt(greatest(sui_market_cap_variance, 0)), sui_average_market_cap_usd, 0)"
       metrics:
         - name: sui_market_cap_variance
         - name: sui_average_market_cap_usd
@@ -153,3 +153,40 @@ metrics:
       metrics:
         - name: sui_first_market_cap_usd
         - name: sui_last_market_cap_usd
+
+# Cumulative metric for the first price value over the chosen window (e.g. 1 year)
+  - name: sui_first_price_usd
+    description: "First sui price value (USD) over the window"
+    type: cumulative
+    label: "sui First Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first  # Takes the first record in the window
+      measure:
+        name: sui_current_price_usd       # This must match your measure's name in the model
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last price value over the chosen window (e.g. 1 year)
+  - name: sui_last_price_usd
+    description: "Last sui price value (USD) over the window"
+    type: cumulative
+    label: "sui Last Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last   # Takes the last record in the window
+      measure:
+        name: sui_current_price_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the price growth rate using the first and last values.
+  - name: sui_price_growth_rate
+    description: "sui - Price Growth Rate (%)"
+    type: derived
+    label: "sui Price Growth Rate (%)"
+    type_params:
+      expr: "safe_division(sui_last_price_usd - sui_first_price_usd, sui_first_price_usd, 0) * 100"
+      metrics:
+        - name: sui_first_price_usd
+        - name: sui_last_price_usd

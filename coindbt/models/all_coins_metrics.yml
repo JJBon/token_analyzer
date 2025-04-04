@@ -1,5 +1,6 @@
 version: 2
 
+
 metrics:
   - name: max_price_all_coins
     description: "Maximum average price among all coins"
@@ -8,7 +9,7 @@ metrics:
     type_params:
       expr: >
         "greatest(
-          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd
+          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd,virtual_protocol_average_price_usd,vana_average_price_usd,osmosis_average_price_usd
         )"
       metrics:
         - name: "coredao_average_price_usd"
@@ -31,6 +32,9 @@ metrics:
         - name: "litecoin_average_price_usd"
         - name: "orca_average_price_usd"
         - name: "ondo_finance_average_price_usd"
+        - name: "virtual_protocol_average_price_usd"
+        - name: "vana_average_price_usd"
+        - name: "osmosis_average_price_usd"
         
 
   - name: min_price_all_coins
@@ -40,7 +44,7 @@ metrics:
     type_params:
       expr: >
         "least(
-          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd
+          coredao_average_price_usd,bitcoin_average_price_usd,sui_average_price_usd,solayer_average_price_usd,chainlink_average_price_usd,uniswap_average_price_usd,deep_average_price_usd,ripple_average_price_usd,polkadot_average_price_usd,mocaverse_average_price_usd,bittorrent_average_price_usd,stellar_average_price_usd,ethereum_average_price_usd,sushi_average_price_usd,solana_average_price_usd,dogecoin_average_price_usd,cardano_average_price_usd,litecoin_average_price_usd,orca_average_price_usd,ondo_finance_average_price_usd,virtual_protocol_average_price_usd,vana_average_price_usd,osmosis_average_price_usd
         )"
       metrics:
         - name: "coredao_average_price_usd"
@@ -63,6 +67,9 @@ metrics:
         - name: "litecoin_average_price_usd"
         - name: "orca_average_price_usd"
         - name: "ondo_finance_average_price_usd"
+        - name: "virtual_protocol_average_price_usd"
+        - name: "vana_average_price_usd"
+        - name: "osmosis_average_price_usd"
         
 
   - name: min_price_volatility_all_coins
@@ -72,7 +79,7 @@ metrics:
     type_params:
       expr: >
         least(
-          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility
+          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility,virtual_protocol_price_volatility,vana_price_volatility,osmosis_price_volatility
         )
       metrics:
         - name: "coredao_price_volatility"
@@ -95,6 +102,9 @@ metrics:
         - name: "litecoin_price_volatility"
         - name: "orca_price_volatility"
         - name: "ondo_finance_price_volatility"
+        - name: "virtual_protocol_price_volatility"
+        - name: "vana_price_volatility"
+        - name: "osmosis_price_volatility"
         
 
   - name: max_price_volatility_all_coins
@@ -104,7 +114,7 @@ metrics:
     type_params:
       expr: >
         greatest(
-          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility
+          coredao_price_volatility,bitcoin_price_volatility,sui_price_volatility,solayer_price_volatility,chainlink_price_volatility,uniswap_price_volatility,deep_price_volatility,ripple_price_volatility,polkadot_price_volatility,mocaverse_price_volatility,bittorrent_price_volatility,stellar_price_volatility,ethereum_price_volatility,sushi_price_volatility,solana_price_volatility,dogecoin_price_volatility,cardano_price_volatility,litecoin_price_volatility,orca_price_volatility,ondo_finance_price_volatility,virtual_protocol_price_volatility,vana_price_volatility,osmosis_price_volatility
         )
       metrics:
         - name: "coredao_price_volatility"
@@ -127,6 +137,9 @@ metrics:
         - name: "litecoin_price_volatility"
         - name: "orca_price_volatility"
         - name: "ondo_finance_price_volatility"
+        - name: "virtual_protocol_price_volatility"
+        - name: "vana_price_volatility"
+        - name: "osmosis_price_volatility"
         
 
   - name: min_market_cap_volatility_all_coins
@@ -136,7 +149,7 @@ metrics:
     type_params:
       expr: >
         nonzero_least(
-          [coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility
+          [coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility,virtual_protocol_market_cap_volatility,vana_market_cap_volatility,osmosis_market_cap_volatility
           ]
         )
       metrics:
@@ -160,6 +173,9 @@ metrics:
         - name: "litecoin_market_cap_volatility"
         - name: "orca_market_cap_volatility"
         - name: "ondo_finance_market_cap_volatility"
+        - name: "virtual_protocol_market_cap_volatility"
+        - name: "vana_market_cap_volatility"
+        - name: "osmosis_market_cap_volatility"
         
 
   - name: max_market_cap_volatility_all_coins
@@ -169,7 +185,7 @@ metrics:
     type_params:
       expr: >
         greatest(
-          coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility
+          coredao_market_cap_volatility,bitcoin_market_cap_volatility,sui_market_cap_volatility,solayer_market_cap_volatility,chainlink_market_cap_volatility,uniswap_market_cap_volatility,deep_market_cap_volatility,ripple_market_cap_volatility,polkadot_market_cap_volatility,mocaverse_market_cap_volatility,bittorrent_market_cap_volatility,stellar_market_cap_volatility,ethereum_market_cap_volatility,sushi_market_cap_volatility,solana_market_cap_volatility,dogecoin_market_cap_volatility,cardano_market_cap_volatility,litecoin_market_cap_volatility,orca_market_cap_volatility,ondo_finance_market_cap_volatility,virtual_protocol_market_cap_volatility,vana_market_cap_volatility,osmosis_market_cap_volatility
         )
       metrics:
         - name: "coredao_market_cap_volatility"
@@ -192,6 +208,9 @@ metrics:
         - name: "litecoin_market_cap_volatility"
         - name: "orca_market_cap_volatility"
         - name: "ondo_finance_market_cap_volatility"
+        - name: "virtual_protocol_market_cap_volatility"
+        - name: "vana_market_cap_volatility"
+        - name: "osmosis_market_cap_volatility"
         
 
   - name: coin_with_max_market_cap_volatility
@@ -201,9 +220,9 @@ metrics:
     type_params:
       expr: >
         greatest_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE)
+        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE), cast(virtual_protocol_market_cap_volatility  as DOUBLE), cast(vana_market_cap_volatility  as DOUBLE), cast(osmosis_market_cap_volatility  as DOUBLE)
         ]
         )
       metrics:
@@ -227,6 +246,9 @@ metrics:
         - name: "litecoin_market_cap_volatility"
         - name: "orca_market_cap_volatility"
         - name: "ondo_finance_market_cap_volatility"
+        - name: "virtual_protocol_market_cap_volatility"
+        - name: "vana_market_cap_volatility"
+        - name: "osmosis_market_cap_volatility"
         
   
 
@@ -237,9 +259,9 @@ metrics:
     type_params:
       expr: >
         greatest_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE)
+        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE), cast(virtual_protocol_price_volatility  as DOUBLE), cast(vana_price_volatility  as DOUBLE), cast(osmosis_price_volatility  as DOUBLE)
         ]
         )
       metrics:
@@ -263,6 +285,9 @@ metrics:
         - name: "litecoin_price_volatility"
         - name: "orca_price_volatility"
         - name: "ondo_finance_price_volatility"
+        - name: "virtual_protocol_price_volatility"
+        - name: "vana_price_volatility"
+        - name: "osmosis_price_volatility"
         
 
   - name: coin_with_min_price_volatility
@@ -272,9 +297,9 @@ metrics:
     type_params:
       expr: >
         least_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE)
+        ARRAY[cast(coredao_price_volatility  as DOUBLE), cast(bitcoin_price_volatility  as DOUBLE), cast(sui_price_volatility  as DOUBLE), cast(solayer_price_volatility  as DOUBLE), cast(chainlink_price_volatility  as DOUBLE), cast(uniswap_price_volatility  as DOUBLE), cast(deep_price_volatility  as DOUBLE), cast(ripple_price_volatility  as DOUBLE), cast(polkadot_price_volatility  as DOUBLE), cast(mocaverse_price_volatility  as DOUBLE), cast(bittorrent_price_volatility  as DOUBLE), cast(stellar_price_volatility  as DOUBLE), cast(ethereum_price_volatility  as DOUBLE), cast(sushi_price_volatility  as DOUBLE), cast(solana_price_volatility  as DOUBLE), cast(dogecoin_price_volatility  as DOUBLE), cast(cardano_price_volatility  as DOUBLE), cast(litecoin_price_volatility  as DOUBLE), cast(orca_price_volatility  as DOUBLE), cast(ondo_finance_price_volatility  as DOUBLE), cast(virtual_protocol_price_volatility  as DOUBLE), cast(vana_price_volatility  as DOUBLE), cast(osmosis_price_volatility  as DOUBLE)
         ]
         )
       metrics:
@@ -298,6 +323,9 @@ metrics:
         - name: "litecoin_price_volatility"
         - name: "orca_price_volatility"
         - name: "ondo_finance_price_volatility"
+        - name: "virtual_protocol_price_volatility"
+        - name: "vana_price_volatility"
+        - name: "osmosis_price_volatility"
         
 
   - name: coin_with_min_market_cap_volatility
@@ -307,9 +335,9 @@ metrics:
     type_params:
       expr: >
         least_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE)
+        ARRAY[cast(coredao_market_cap_volatility  as DOUBLE), cast(bitcoin_market_cap_volatility  as DOUBLE), cast(sui_market_cap_volatility  as DOUBLE), cast(solayer_market_cap_volatility  as DOUBLE), cast(chainlink_market_cap_volatility  as DOUBLE), cast(uniswap_market_cap_volatility  as DOUBLE), cast(deep_market_cap_volatility  as DOUBLE), cast(ripple_market_cap_volatility  as DOUBLE), cast(polkadot_market_cap_volatility  as DOUBLE), cast(mocaverse_market_cap_volatility  as DOUBLE), cast(bittorrent_market_cap_volatility  as DOUBLE), cast(stellar_market_cap_volatility  as DOUBLE), cast(ethereum_market_cap_volatility  as DOUBLE), cast(sushi_market_cap_volatility  as DOUBLE), cast(solana_market_cap_volatility  as DOUBLE), cast(dogecoin_market_cap_volatility  as DOUBLE), cast(cardano_market_cap_volatility  as DOUBLE), cast(litecoin_market_cap_volatility  as DOUBLE), cast(orca_market_cap_volatility  as DOUBLE), cast(ondo_finance_market_cap_volatility  as DOUBLE), cast(virtual_protocol_market_cap_volatility  as DOUBLE), cast(vana_market_cap_volatility  as DOUBLE), cast(osmosis_market_cap_volatility  as DOUBLE)
         ]
         )
       metrics:
@@ -333,6 +361,9 @@ metrics:
         - name: "litecoin_market_cap_volatility"
         - name: "orca_market_cap_volatility"
         - name: "ondo_finance_market_cap_volatility"
+        - name: "virtual_protocol_market_cap_volatility"
+        - name: "vana_market_cap_volatility"
+        - name: "osmosis_market_cap_volatility"
         
 
   - name: max_market_cap_growth_rate
@@ -342,7 +373,7 @@ metrics:
     type_params:
       expr: >
         greatest(
-          coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate
+          coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate,virtual_protocol_market_cap_growth_rate,vana_market_cap_growth_rate,osmosis_market_cap_growth_rate
         )
       metrics:
         - name: "coredao_market_cap_growth_rate"
@@ -365,6 +396,9 @@ metrics:
         - name: "litecoin_market_cap_growth_rate"
         - name: "orca_market_cap_growth_rate"
         - name: "ondo_finance_market_cap_growth_rate"
+        - name: "virtual_protocol_market_cap_growth_rate"
+        - name: "vana_market_cap_growth_rate"
+        - name: "osmosis_market_cap_growth_rate"
         
 
   - name: coin_with_max_market_cap_growth_rate
@@ -374,9 +408,9 @@ metrics:
     type_params:
       expr: >
         greatest_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_market_cap_growth_rate  as DOUBLE), cast(bitcoin_market_cap_growth_rate  as DOUBLE), cast(sui_market_cap_growth_rate  as DOUBLE), cast(solayer_market_cap_growth_rate  as DOUBLE), cast(chainlink_market_cap_growth_rate  as DOUBLE), cast(uniswap_market_cap_growth_rate  as DOUBLE), cast(deep_market_cap_growth_rate  as DOUBLE), cast(ripple_market_cap_growth_rate  as DOUBLE), cast(polkadot_market_cap_growth_rate  as DOUBLE), cast(mocaverse_market_cap_growth_rate  as DOUBLE), cast(bittorrent_market_cap_growth_rate  as DOUBLE), cast(stellar_market_cap_growth_rate  as DOUBLE), cast(ethereum_market_cap_growth_rate  as DOUBLE), cast(sushi_market_cap_growth_rate  as DOUBLE), cast(solana_market_cap_growth_rate  as DOUBLE), cast(dogecoin_market_cap_growth_rate  as DOUBLE), cast(cardano_market_cap_growth_rate  as DOUBLE), cast(litecoin_market_cap_growth_rate  as DOUBLE), cast(orca_market_cap_growth_rate  as DOUBLE), cast(ondo_finance_market_cap_growth_rate  as DOUBLE)
+        ARRAY[cast(coredao_market_cap_growth_rate  as DOUBLE), cast(bitcoin_market_cap_growth_rate  as DOUBLE), cast(sui_market_cap_growth_rate  as DOUBLE), cast(solayer_market_cap_growth_rate  as DOUBLE), cast(chainlink_market_cap_growth_rate  as DOUBLE), cast(uniswap_market_cap_growth_rate  as DOUBLE), cast(deep_market_cap_growth_rate  as DOUBLE), cast(ripple_market_cap_growth_rate  as DOUBLE), cast(polkadot_market_cap_growth_rate  as DOUBLE), cast(mocaverse_market_cap_growth_rate  as DOUBLE), cast(bittorrent_market_cap_growth_rate  as DOUBLE), cast(stellar_market_cap_growth_rate  as DOUBLE), cast(ethereum_market_cap_growth_rate  as DOUBLE), cast(sushi_market_cap_growth_rate  as DOUBLE), cast(solana_market_cap_growth_rate  as DOUBLE), cast(dogecoin_market_cap_growth_rate  as DOUBLE), cast(cardano_market_cap_growth_rate  as DOUBLE), cast(litecoin_market_cap_growth_rate  as DOUBLE), cast(orca_market_cap_growth_rate  as DOUBLE), cast(ondo_finance_market_cap_growth_rate  as DOUBLE), cast(virtual_protocol_market_cap_growth_rate  as DOUBLE), cast(vana_market_cap_growth_rate  as DOUBLE), cast(osmosis_market_cap_growth_rate  as DOUBLE)
         ]
         )
       metrics:
@@ -400,6 +434,9 @@ metrics:
         - name: "litecoin_market_cap_growth_rate"
         - name: "orca_market_cap_growth_rate"
         - name: "ondo_finance_market_cap_growth_rate"
+        - name: "virtual_protocol_market_cap_growth_rate"
+        - name: "vana_market_cap_growth_rate"
+        - name: "osmosis_market_cap_growth_rate"
         
   
   - name: min_market_cap_growth_rate
@@ -409,7 +446,7 @@ metrics:
     type_params:
      expr: >
         least(
-        coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate
+        coredao_market_cap_growth_rate,bitcoin_market_cap_growth_rate,sui_market_cap_growth_rate,solayer_market_cap_growth_rate,chainlink_market_cap_growth_rate,uniswap_market_cap_growth_rate,deep_market_cap_growth_rate,ripple_market_cap_growth_rate,polkadot_market_cap_growth_rate,mocaverse_market_cap_growth_rate,bittorrent_market_cap_growth_rate,stellar_market_cap_growth_rate,ethereum_market_cap_growth_rate,sushi_market_cap_growth_rate,solana_market_cap_growth_rate,dogecoin_market_cap_growth_rate,cardano_market_cap_growth_rate,litecoin_market_cap_growth_rate,orca_market_cap_growth_rate,ondo_finance_market_cap_growth_rate,virtual_protocol_market_cap_growth_rate,vana_market_cap_growth_rate,osmosis_market_cap_growth_rate
         )
      metrics:
        - name: "coredao_market_cap_growth_rate"
@@ -432,6 +469,9 @@ metrics:
        - name: "litecoin_market_cap_growth_rate"
        - name: "orca_market_cap_growth_rate"
        - name: "ondo_finance_market_cap_growth_rate"
+       - name: "virtual_protocol_market_cap_growth_rate"
+       - name: "vana_market_cap_growth_rate"
+       - name: "osmosis_market_cap_growth_rate"
        
 
   - name: coin_with_min_market_cap_growth_rate
@@ -441,9 +481,9 @@ metrics:
     type_params:
      expr: >
         least_coin(
-        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance'
+        ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
         ],
-        ARRAY[cast(coredao_market_cap_growth_rate as DOUBLE), cast(bitcoin_market_cap_growth_rate as DOUBLE), cast(sui_market_cap_growth_rate as DOUBLE), cast(solayer_market_cap_growth_rate as DOUBLE), cast(chainlink_market_cap_growth_rate as DOUBLE), cast(uniswap_market_cap_growth_rate as DOUBLE), cast(deep_market_cap_growth_rate as DOUBLE), cast(ripple_market_cap_growth_rate as DOUBLE), cast(polkadot_market_cap_growth_rate as DOUBLE), cast(mocaverse_market_cap_growth_rate as DOUBLE), cast(bittorrent_market_cap_growth_rate as DOUBLE), cast(stellar_market_cap_growth_rate as DOUBLE), cast(ethereum_market_cap_growth_rate as DOUBLE), cast(sushi_market_cap_growth_rate as DOUBLE), cast(solana_market_cap_growth_rate as DOUBLE), cast(dogecoin_market_cap_growth_rate as DOUBLE), cast(cardano_market_cap_growth_rate as DOUBLE), cast(litecoin_market_cap_growth_rate as DOUBLE), cast(orca_market_cap_growth_rate as DOUBLE), cast(ondo_finance_market_cap_growth_rate as DOUBLE)
+        ARRAY[cast(coredao_market_cap_growth_rate as DOUBLE), cast(bitcoin_market_cap_growth_rate as DOUBLE), cast(sui_market_cap_growth_rate as DOUBLE), cast(solayer_market_cap_growth_rate as DOUBLE), cast(chainlink_market_cap_growth_rate as DOUBLE), cast(uniswap_market_cap_growth_rate as DOUBLE), cast(deep_market_cap_growth_rate as DOUBLE), cast(ripple_market_cap_growth_rate as DOUBLE), cast(polkadot_market_cap_growth_rate as DOUBLE), cast(mocaverse_market_cap_growth_rate as DOUBLE), cast(bittorrent_market_cap_growth_rate as DOUBLE), cast(stellar_market_cap_growth_rate as DOUBLE), cast(ethereum_market_cap_growth_rate as DOUBLE), cast(sushi_market_cap_growth_rate as DOUBLE), cast(solana_market_cap_growth_rate as DOUBLE), cast(dogecoin_market_cap_growth_rate as DOUBLE), cast(cardano_market_cap_growth_rate as DOUBLE), cast(litecoin_market_cap_growth_rate as DOUBLE), cast(orca_market_cap_growth_rate as DOUBLE), cast(ondo_finance_market_cap_growth_rate as DOUBLE), cast(virtual_protocol_market_cap_growth_rate as DOUBLE), cast(vana_market_cap_growth_rate as DOUBLE), cast(osmosis_market_cap_growth_rate as DOUBLE)
         ]
         )
      metrics:
@@ -467,4 +507,161 @@ metrics:
       - name: "litecoin_market_cap_growth_rate"
       - name: "orca_market_cap_growth_rate"
       - name: "ondo_finance_market_cap_growth_rate"
+      - name: "virtual_protocol_market_cap_growth_rate"
+      - name: "vana_market_cap_growth_rate"
+      - name: "osmosis_market_cap_growth_rate"
       
+
+  - name: max_price_growth_rate
+    description: "Maximum price growth rate across coins"
+    type: derived
+    label: "Max Price Growth Rate (%) Across Coins"
+    type_params:
+      expr: >
+        greatest(
+          coredao_price_growth_rate,bitcoin_price_growth_rate,sui_price_growth_rate,solayer_price_growth_rate,chainlink_price_growth_rate,uniswap_price_growth_rate,deep_price_growth_rate,ripple_price_growth_rate,polkadot_price_growth_rate,mocaverse_price_growth_rate,bittorrent_price_growth_rate,stellar_price_growth_rate,ethereum_price_growth_rate,sushi_price_growth_rate,solana_price_growth_rate,dogecoin_price_growth_rate,cardano_price_growth_rate,litecoin_price_growth_rate,orca_price_growth_rate,ondo_finance_price_growth_rate,virtual_protocol_price_growth_rate,vana_price_growth_rate,osmosis_price_growth_rate
+        )
+      metrics:
+        - name: "coredao_price_growth_rate"
+        - name: "bitcoin_price_growth_rate"
+        - name: "sui_price_growth_rate"
+        - name: "solayer_price_growth_rate"
+        - name: "chainlink_price_growth_rate"
+        - name: "uniswap_price_growth_rate"
+        - name: "deep_price_growth_rate"
+        - name: "ripple_price_growth_rate"
+        - name: "polkadot_price_growth_rate"
+        - name: "mocaverse_price_growth_rate"
+        - name: "bittorrent_price_growth_rate"
+        - name: "stellar_price_growth_rate"
+        - name: "ethereum_price_growth_rate"
+        - name: "sushi_price_growth_rate"
+        - name: "solana_price_growth_rate"
+        - name: "dogecoin_price_growth_rate"
+        - name: "cardano_price_growth_rate"
+        - name: "litecoin_price_growth_rate"
+        - name: "orca_price_growth_rate"
+        - name: "ondo_finance_price_growth_rate"
+        - name: "virtual_protocol_price_growth_rate"
+        - name: "vana_price_growth_rate"
+        - name: "osmosis_price_growth_rate"
+        
+# -------------------------------
+# Coin with Max Price Growth Rate
+# -------------------------------
+  - name: coin_with_max_price_growth_rate
+    description: "Coin with the highest price growth rate across all coins"
+    type: derived
+    label: "Coin With Max Price Growth Rate Across Coins"
+    type_params:
+      expr: >
+        greatest_coin(
+          ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
+          ],
+          ARRAY[cast(coredao_price_growth_rate as DOUBLE), cast(bitcoin_price_growth_rate as DOUBLE), cast(sui_price_growth_rate as DOUBLE), cast(solayer_price_growth_rate as DOUBLE), cast(chainlink_price_growth_rate as DOUBLE), cast(uniswap_price_growth_rate as DOUBLE), cast(deep_price_growth_rate as DOUBLE), cast(ripple_price_growth_rate as DOUBLE), cast(polkadot_price_growth_rate as DOUBLE), cast(mocaverse_price_growth_rate as DOUBLE), cast(bittorrent_price_growth_rate as DOUBLE), cast(stellar_price_growth_rate as DOUBLE), cast(ethereum_price_growth_rate as DOUBLE), cast(sushi_price_growth_rate as DOUBLE), cast(solana_price_growth_rate as DOUBLE), cast(dogecoin_price_growth_rate as DOUBLE), cast(cardano_price_growth_rate as DOUBLE), cast(litecoin_price_growth_rate as DOUBLE), cast(orca_price_growth_rate as DOUBLE), cast(ondo_finance_price_growth_rate as DOUBLE), cast(virtual_protocol_price_growth_rate as DOUBLE), cast(vana_price_growth_rate as DOUBLE), cast(osmosis_price_growth_rate as DOUBLE)
+          ]
+        )
+      metrics:
+        - name: "coredao_price_growth_rate"
+        - name: "bitcoin_price_growth_rate"
+        - name: "sui_price_growth_rate"
+        - name: "solayer_price_growth_rate"
+        - name: "chainlink_price_growth_rate"
+        - name: "uniswap_price_growth_rate"
+        - name: "deep_price_growth_rate"
+        - name: "ripple_price_growth_rate"
+        - name: "polkadot_price_growth_rate"
+        - name: "mocaverse_price_growth_rate"
+        - name: "bittorrent_price_growth_rate"
+        - name: "stellar_price_growth_rate"
+        - name: "ethereum_price_growth_rate"
+        - name: "sushi_price_growth_rate"
+        - name: "solana_price_growth_rate"
+        - name: "dogecoin_price_growth_rate"
+        - name: "cardano_price_growth_rate"
+        - name: "litecoin_price_growth_rate"
+        - name: "orca_price_growth_rate"
+        - name: "ondo_finance_price_growth_rate"
+        - name: "virtual_protocol_price_growth_rate"
+        - name: "vana_price_growth_rate"
+        - name: "osmosis_price_growth_rate"
+        
+
+  # -------------------------------
+  # Min Price Growth Rate
+  # -------------------------------
+  - name: min_price_growth_rate
+    description: "Minimum price growth rate"
+    type: derived
+    label: "Min Price Growth Rate (%) Across Coins"
+    type_params:
+      expr: >
+        least(
+          coredao_price_growth_rate,bitcoin_price_growth_rate,sui_price_growth_rate,solayer_price_growth_rate,chainlink_price_growth_rate,uniswap_price_growth_rate,deep_price_growth_rate,ripple_price_growth_rate,polkadot_price_growth_rate,mocaverse_price_growth_rate,bittorrent_price_growth_rate,stellar_price_growth_rate,ethereum_price_growth_rate,sushi_price_growth_rate,solana_price_growth_rate,dogecoin_price_growth_rate,cardano_price_growth_rate,litecoin_price_growth_rate,orca_price_growth_rate,ondo_finance_price_growth_rate,virtual_protocol_price_growth_rate,vana_price_growth_rate,osmosis_price_growth_rate
+        )
+      metrics:
+        - name: "coredao_price_growth_rate"
+        - name: "bitcoin_price_growth_rate"
+        - name: "sui_price_growth_rate"
+        - name: "solayer_price_growth_rate"
+        - name: "chainlink_price_growth_rate"
+        - name: "uniswap_price_growth_rate"
+        - name: "deep_price_growth_rate"
+        - name: "ripple_price_growth_rate"
+        - name: "polkadot_price_growth_rate"
+        - name: "mocaverse_price_growth_rate"
+        - name: "bittorrent_price_growth_rate"
+        - name: "stellar_price_growth_rate"
+        - name: "ethereum_price_growth_rate"
+        - name: "sushi_price_growth_rate"
+        - name: "solana_price_growth_rate"
+        - name: "dogecoin_price_growth_rate"
+        - name: "cardano_price_growth_rate"
+        - name: "litecoin_price_growth_rate"
+        - name: "orca_price_growth_rate"
+        - name: "ondo_finance_price_growth_rate"
+        - name: "virtual_protocol_price_growth_rate"
+        - name: "vana_price_growth_rate"
+        - name: "osmosis_price_growth_rate"
+        
+
+  # -------------------------------
+  # Coin with Min Price Growth Rate
+  # -------------------------------
+  - name: coin_with_min_price_growth_rate
+    description: "Coin with the lowest price growth rate across all coins"
+    type: derived
+    label: "Coin With Min Price Growth Rate Across Coins"
+    type_params:
+      expr: >
+        least_coin(
+          ARRAY['coredao','bitcoin','sui','solayer','chainlink','uniswap','deep','ripple','polkadot','mocaverse','bittorrent','stellar','ethereum','sushi','solana','dogecoin','cardano','litecoin','orca','ondo_finance','virtual_protocol','vana','osmosis'
+          ],
+          ARRAY[cast(coredao_price_growth_rate as DOUBLE), cast(bitcoin_price_growth_rate as DOUBLE), cast(sui_price_growth_rate as DOUBLE), cast(solayer_price_growth_rate as DOUBLE), cast(chainlink_price_growth_rate as DOUBLE), cast(uniswap_price_growth_rate as DOUBLE), cast(deep_price_growth_rate as DOUBLE), cast(ripple_price_growth_rate as DOUBLE), cast(polkadot_price_growth_rate as DOUBLE), cast(mocaverse_price_growth_rate as DOUBLE), cast(bittorrent_price_growth_rate as DOUBLE), cast(stellar_price_growth_rate as DOUBLE), cast(ethereum_price_growth_rate as DOUBLE), cast(sushi_price_growth_rate as DOUBLE), cast(solana_price_growth_rate as DOUBLE), cast(dogecoin_price_growth_rate as DOUBLE), cast(cardano_price_growth_rate as DOUBLE), cast(litecoin_price_growth_rate as DOUBLE), cast(orca_price_growth_rate as DOUBLE), cast(ondo_finance_price_growth_rate as DOUBLE), cast(virtual_protocol_price_growth_rate as DOUBLE), cast(vana_price_growth_rate as DOUBLE), cast(osmosis_price_growth_rate as DOUBLE)
+          ]
+        )
+      metrics:
+        - name: "coredao_price_growth_rate"
+        - name: "bitcoin_price_growth_rate"
+        - name: "sui_price_growth_rate"
+        - name: "solayer_price_growth_rate"
+        - name: "chainlink_price_growth_rate"
+        - name: "uniswap_price_growth_rate"
+        - name: "deep_price_growth_rate"
+        - name: "ripple_price_growth_rate"
+        - name: "polkadot_price_growth_rate"
+        - name: "mocaverse_price_growth_rate"
+        - name: "bittorrent_price_growth_rate"
+        - name: "stellar_price_growth_rate"
+        - name: "ethereum_price_growth_rate"
+        - name: "sushi_price_growth_rate"
+        - name: "solana_price_growth_rate"
+        - name: "dogecoin_price_growth_rate"
+        - name: "cardano_price_growth_rate"
+        - name: "litecoin_price_growth_rate"
+        - name: "orca_price_growth_rate"
+        - name: "ondo_finance_price_growth_rate"
+        - name: "virtual_protocol_price_growth_rate"
+        - name: "vana_price_growth_rate"
+        - name: "osmosis_price_growth_rate"
+        

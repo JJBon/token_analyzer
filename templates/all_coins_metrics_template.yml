@@ -1,12 +1,13 @@
 version: 2
 
+
 metrics:
   - name: max_price_all_coins
     description: "Maximum average price among all coins"
     type: derived
     label: "Max Price (USD) Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         "greatest(
           {% for coin in coins -%}
@@ -23,7 +24,7 @@ metrics:
     type: derived
     label: "Min Price (USD) Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         "least(
           {% for coin in coins -%}
@@ -40,7 +41,7 @@ metrics:
     type: derived
     label: "Min Price Volatility Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         least(
           {% for coin in coins -%}
@@ -57,7 +58,8 @@ metrics:
     type: derived
     label: "Max Price Volatility Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
+      
       expr: >
         greatest(
           {% for coin in coins -%}
@@ -74,7 +76,8 @@ metrics:
     type: derived
     label: "Min Market Cap Volatility Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
+      
       expr: >
         nonzero_least(
           [{% for coin in coins -%}
@@ -92,7 +95,8 @@ metrics:
     type: derived
     label: "Max Market Cap Volatility Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
+      
       expr: >
         greatest(
           {% for coin in coins -%}
@@ -109,7 +113,7 @@ metrics:
     type: derived
     label: "Coin With Max Market Cap Volatility"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         greatest_coin(
         ARRAY[
@@ -134,7 +138,7 @@ metrics:
     type: derived
     label: "Coin With Max Price Volatility"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         greatest_coin(
         ARRAY[
@@ -158,7 +162,7 @@ metrics:
     type: derived
     label: "Coin With Min Price Volatility"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         least_coin(
         ARRAY[
@@ -182,7 +186,7 @@ metrics:
     type: derived
     label: "Coin With Min Market Cap Volatility"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         least_coin(
         ARRAY[
@@ -206,7 +210,7 @@ metrics:
     type: derived
     label: "Max Market Cap Growth Rate (%) Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         greatest(
           {% for coin in coins -%}
@@ -223,7 +227,7 @@ metrics:
     type: derived
     label: "Coin With Max Market Growth Rate Across Coins"
     type_params:
-      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+      {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         greatest_coin(
         ARRAY[
@@ -247,7 +251,7 @@ metrics:
     type: derived
     label: "Min Market Cap Growth Rate (%) Across Coins"
     type_params:
-     {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+     {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         least(
         {% for coin in coins -%}
@@ -264,7 +268,7 @@ metrics:
     type: derived
     label: "Coin With Min Market Growth Rate Across Coins"
     type_params:
-     {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance'.split(',') -%}
+     {% set coins = 'coredao,bitcoin,sui,solayer,chainlink,uniswap,deep,ripple,polkadot,mocaverse,bittorrent,stellar,ethereum,sushi,solana,dogecoin,cardano,litecoin,orca,ondo_finance,virtual_protocol,vana,osmosis'.split(',') -%}
       expr: >
         least_coin(
         ARRAY[
@@ -282,3 +286,89 @@ metrics:
       {% for coin in coins -%}
       - name: "{{ coin|trim }}_market_cap_growth_rate"
       {% endfor %}
+
+  - name: max_price_growth_rate
+    description: "Maximum price growth rate across coins"
+    type: derived
+    label: "Max Price Growth Rate (%) Across Coins"
+    type_params:
+      expr: >
+        greatest(
+          {% for coin in coins -%}
+            {{ coin|trim }}_price_growth_rate{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+        )
+      metrics:
+        {% for coin in coins -%}
+        - name: "{{ coin|trim }}_price_growth_rate"
+        {% endfor %}
+# -------------------------------
+# Coin with Max Price Growth Rate
+# -------------------------------
+  - name: coin_with_max_price_growth_rate
+    description: "Coin with the highest price growth rate across all coins"
+    type: derived
+    label: "Coin With Max Price Growth Rate Across Coins"
+    type_params:
+      expr: >
+        greatest_coin(
+          ARRAY[
+          {%- for coin in coins -%}
+            '{{ coin|trim }}'{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ],
+          ARRAY[
+          {%- for coin in coins -%}
+            cast({{ coin|trim }}_price_growth_rate as DOUBLE){% if not loop.last %}, {% endif %}
+          {%- endfor %}
+          ]
+        )
+      metrics:
+        {% for coin in coins -%}
+        - name: "{{ coin|trim }}_price_growth_rate"
+        {% endfor %}
+
+  # -------------------------------
+  # Min Price Growth Rate
+  # -------------------------------
+  - name: min_price_growth_rate
+    description: "Minimum price growth rate"
+    type: derived
+    label: "Min Price Growth Rate (%) Across Coins"
+    type_params:
+      expr: >
+        least(
+          {% for coin in coins -%}
+            {{ coin }}_price_growth_rate{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+        )
+      metrics:
+        {% for coin in coins -%}
+        - name: "{{ coin|trim }}_price_growth_rate"
+        {% endfor %}
+
+  # -------------------------------
+  # Coin with Min Price Growth Rate
+  # -------------------------------
+  - name: coin_with_min_price_growth_rate
+    description: "Coin with the lowest price growth rate across all coins"
+    type: derived
+    label: "Coin With Min Price Growth Rate Across Coins"
+    type_params:
+      expr: >
+        least_coin(
+          ARRAY[
+          {%- for coin in coins -%}
+            '{{ coin|trim }}'{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ],
+          ARRAY[
+          {%- for coin in coins -%}
+            cast({{ coin|trim }}_price_growth_rate as DOUBLE){% if not loop.last %}, {% endif %}
+          {%- endfor %}
+          ]
+        )
+      metrics:
+        {% for coin in coins -%}
+        - name: "{{ coin|trim }}_price_growth_rate"
+        {% endfor %}

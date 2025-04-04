@@ -92,7 +92,7 @@ metrics:
     type: derived
     label: "ripple Volatility (CV)"
     type_params:
-      expr: "sqrt(ripple_price_variance) / ripple_average_price_usd"
+      expr: "sqrt(greatest(0, ripple_price_variance)) / ripple_average_price_usd"
       metrics:
         - name: ripple_price_variance
         - name: ripple_average_price_usd
@@ -102,7 +102,7 @@ metrics:
     type: derived
     label: "ripple Market Cap Volatility (CV)"
     type_params:
-      expr: "safe_division(sqrt(ripple_market_cap_variance), ripple_average_market_cap_usd, 0)"
+      expr: "safe_division(sqrt(greatest(ripple_market_cap_variance, 0)), ripple_average_market_cap_usd, 0)"
       metrics:
         - name: ripple_market_cap_variance
         - name: ripple_average_market_cap_usd
@@ -153,3 +153,40 @@ metrics:
       metrics:
         - name: ripple_first_market_cap_usd
         - name: ripple_last_market_cap_usd
+
+# Cumulative metric for the first price value over the chosen window (e.g. 1 year)
+  - name: ripple_first_price_usd
+    description: "First ripple price value (USD) over the window"
+    type: cumulative
+    label: "ripple First Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: first  # Takes the first record in the window
+      measure:
+        name: ripple_current_price_usd       # This must match your measure's name in the model
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Cumulative metric for the last price value over the chosen window (e.g. 1 year)
+  - name: ripple_last_price_usd
+    description: "Last ripple price value (USD) over the window"
+    type: cumulative
+    label: "ripple Last Price (USD)"
+    type_params:
+      cumulative_type_params:
+        period_agg: last   # Takes the last record in the window
+      measure:
+        name: ripple_current_price_usd
+        fill_nulls_with: 0
+        join_to_timespine: true
+
+  # Derived metric that computes the price growth rate using the first and last values.
+  - name: ripple_price_growth_rate
+    description: "ripple - Price Growth Rate (%)"
+    type: derived
+    label: "ripple Price Growth Rate (%)"
+    type_params:
+      expr: "safe_division(ripple_last_price_usd - ripple_first_price_usd, ripple_first_price_usd, 0) * 100"
+      metrics:
+        - name: ripple_first_price_usd
+        - name: ripple_last_price_usd

@@ -3,7 +3,7 @@ dbt-common==1.15.0
 dbt-core==1.9.3
 dbt-duckdb==1.9.2
 dbt-extractor==0.5.1
-dbt-metricflow==0.8.1
+dbt-metricflow
 dbt-semantic-interfaces==0.7.4
 dotenv
 requests
@@ -14,3 +14,5 @@ pandas
 statsmodels
 pmdarima
 boto3
+pytest
+mcp 

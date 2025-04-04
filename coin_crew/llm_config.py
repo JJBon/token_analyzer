@@ -26,6 +26,6 @@ openai_gpt35 = LLM(model="gpt-3.5-turbo", temperature=0.7, max_tokens=512)
 
 print(f"key id: {os.getenv('AWS_ACCESS_KEY_ID')}")
 bedrock_llm = LLM(
-    model="bedrock/amazon.nova-lite-v1:0"
+    model="bedrock/amazon.nova-pro-v1:0"
 )
 # ^ Using a cheaper OpenAI model for tasks that don't need GPT-4, with moderate token limit

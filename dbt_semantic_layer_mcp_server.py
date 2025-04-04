@@ -7,6 +7,8 @@ import subprocess
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import re
+
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -15,24 +17,48 @@ logging.basicConfig(
 )
 
 #######################################
-# Minimal dbtCoreClient Stub with Lazy Asynchronous Metrics Cache
+# Minimal dbtCoreClient Stub 
+# with File-based Metrics Cache (unchanged)
 #######################################
 class DBTCoreClient:
-    """
-    A minimal stub for demonstrating how you'd communicate with dbt Core.
-    In a real environment, parse the manifest or run `dbt compile`, etc.
-    This version loads the metrics cache in a background thread.
-    """
     def __init__(self):
-        self._query_store = {}  # A dict to store query_id -> query_params
-        # Use the directory of the current script to find the `coindbt` path
         self.project_dir = os.path.join(os.path.dirname(__file__), "coindbt")
         self.manifest_path = os.path.join(self.project_dir, "target", "manifest.json")
+        
+        # Path to store metrics JSON file
+        self.metrics_cache_file = os.path.join(self.project_dir, "target", "metrics_cache.json")
+
         self._metrics_cache = None  # will store {"metrics": [ ... ]}
         self._cache_lock = threading.Lock()
         self._cache_loading = False
-        # Start background thread to build the cache.
-        self._start_background_cache_loading()
+
+        # Attempt to load from file on init
+        self._try_load_metrics_from_file()
+        if self._metrics_cache is None:
+            self._start_background_cache_loading()
+
+    def _try_load_metrics_from_file(self):
+        """Load metrics from a JSON file if it exists."""
+        if os.path.exists(self.metrics_cache_file):
+            try:
+                with open(self.metrics_cache_file, "r") as f:
+                    data = json.load(f)
+                    if "metrics" in data:
+                        self._metrics_cache = data
+                        logging.info(f"Loaded metrics from file: {self.metrics_cache_file}")
+            except Exception as e:
+                logging.error(f"Failed to load metrics from file: {e}")
+
+    def _write_metrics_to_file(self):
+        """Write the current metrics cache to a JSON file."""
+        if self._metrics_cache is None:
+            return
+        try:
+            with open(self.metrics_cache_file, "w") as f:
+                json.dump(self._metrics_cache, f, indent=2)
+            logging.info(f"Wrote metrics cache to file: {self.metrics_cache_file}")
+        except Exception as e:
+            logging.error(f"Failed to write metrics to file: {e}")
 
     def _start_background_cache_loading(self):
         with self._cache_lock:
@@ -63,7 +89,6 @@ class DBTCoreClient:
                 manifest_data = json.load(f)
         else:
             logging.warning("No manifest.json found. Run dbt compile or dbt build first.")
-
         manifest_metrics = manifest_data.get("metrics", {})
 
         # 3) Use a thread pool to concurrently fetch dimensions for each metric
@@ -80,7 +105,10 @@ class DBTCoreClient:
 
         metrics_list = []
         with ThreadPoolExecutor() as executor:
-            future_to_uid = {executor.submit(process_metric, uid, info): uid for uid, info in metrics_from_ls.items()}
+            future_to_uid = {
+                executor.submit(process_metric, uid, info): uid 
+                for uid, info in metrics_from_ls.items()
+            }
             for future in as_completed(future_to_uid):
                 try:
                     result = future.result()
@@ -89,9 +117,10 @@ class DBTCoreClient:
                     uid = future_to_uid[future]
                     logging.error(f"Error processing metric {uid}: {e}")
 
-        # 4) Store the results in our cache.
+        # 4) Store the results in our cache and write them to file
         self._metrics_cache = {"metrics": metrics_list}
         logging.info("Metrics cache built successfully.")
+        self._write_metrics_to_file()
 
     def _get_all_metrics_info(self):
         logging.info("Fetching metrics from dbt with `dbt ls`...")
@@ -144,82 +173,225 @@ class DBTCoreClient:
             if line.startswith("• "):
                 dim_name = line.replace("• ", "").strip()
                 dimension_list.append(dim_name)
-        return dimension_list
+        return list(set(dimension_list))
 
     def fetchMetrics(self):
-        """
-        Returns the cached metrics info. If the cache isn't ready, logs a warning and returns an empty result.
-        """
+        """Return the metrics from our in-memory or file-based cache."""
         if self._metrics_cache is None:
-            logging.warning("Metrics cache not ready yet. Returning empty result.")
+            logging.warning("Metrics cache not ready in memory.")
+            self._try_load_metrics_from_file()
+
+        if self._metrics_cache is None:
+            logging.warning("Metrics cache still not ready. Returning empty result.")
             return {"metrics": []}
+
         return self._metrics_cache
 
     def refreshMetrics(self):
-        logging.info("Refreshing metrics cache...")
-        self._build_metrics_cache()
+        """Forcibly re-build the metrics cache (synchronously)."""
+        logging.info("Refreshing metrics cache (synchronously)...")
+        with self._cache_lock:
+            self._build_metrics_cache()
         return self._metrics_cache
 
-    def getQueryResult(self, query_id: str):
-        if query_id not in self._query_store:
+    def _find_dimensions_for_metric(self, metric_name: str):
+        """Return the valid dimensions for a given metric."""
+        if not self._metrics_cache:
+            return []
+        for m in self._metrics_cache["metrics"]:
+            if m["name"] == metric_name:
+                return m["dimensions"]
+        return []
+
+    #######################################
+    # createQuery returns the *structure*
+    # we want to pass to fetch_query_result
+    #######################################
+    def createQuery(self, query_params):
+        """
+        This returns a JSON structure (no queryId).
+        For example:
+        {
+          "status": "CREATED",
+          "query": {
+             "metrics": [...],
+             "groupBy": [...],
+             "limit": 123,
+             "orderBy": [...]
+          }
+        }
+        """
+        # Extract arrays of strings
+        metrics_list = query_params.get("metrics", [])
+        group_bys = query_params.get("groupBy", [])
+        limit = query_params.get("limit", None)
+        order_by = query_params.get("orderBy", [])
+
+        # Validate presence of metrics
+        if not metrics_list:
             return {
-                "queryId": query_id,
                 "status": "ERROR",
-                "results": [],
-                "error": f"No query found for ID: {query_id}"
+                "error": "Missing required 'metrics' array",
+                "query": query_params
             }
 
-        query_params = self._query_store[query_id]
-        metrics_list = query_params.get("metrics", [])
-        group_bys = query_params.get("groupBy", []) or query_params.get("dimensions", [])
-        filters = query_params.get("where", []) or query_params.get("filters", [])
-        limit = query_params.get("limit", None)
+        # Validate groupBys for each metric
+        invalid_dims = []
+        for metric_name in metrics_list:
+            valid_dims = self._find_dimensions_for_metric(metric_name)
+            for requested_dim in group_bys:
+                if requested_dim in valid_dims:
+                    continue
+                # If there's a time-suffix, try to remove it
+                parts = requested_dim.split("__")
+                if len(parts) > 1:
+                    base_dim = "__".join(parts[:-1])
+                else:
+                    base_dim = requested_dim
+                if base_dim not in valid_dims:
+                    invalid_dims.append((metric_name, requested_dim))
+
+        if invalid_dims:
+            lines = []
+            for (m, d) in invalid_dims:
+                suggestions = self._find_dimensions_for_metric(m)
+                lines.append(f"Dimension '{d}' not valid for metric '{m}'. Valid dims: {suggestions}")
+            return {
+                "status": "ERROR",
+                "error": "\n\n".join(lines),
+                "query": query_params
+            }
+
+        # Return a query dict (the user can feed this directly to fetch_query_result)
+        return {
+            "status": "CREATED",
+            "query": {
+                "metrics": metrics_list,
+                "groupBy": group_bys,
+                "limit": limit,
+                "orderBy": order_by
+            }
+        }
+
+    #######################################
+    # Instead of referencing a stored queryId,
+    # we run the query from the provided dict
+    #######################################
+
+    import re
+
+    def parse_metricflow_table(self,raw_output: str) -> list[dict]:
+        """
+        Parse space-aligned MetricFlow table output like:
+
+            metric_time__month      max_price_volatility_all_coins    min_price_volatility_all_coins ...
+            --------------------    ------------------------------     -------------------------------
+            2024-03-01T00:00:00     0.119452                          0.0220735
+            ...
+
+        Returns a list of dict rows, e.g.:
+        [
+        {
+            "metric_time__month": "2024-03-01T00:00:00",
+            "max_price_volatility_all_coins": "0.119452",
+            "min_price_volatility_all_coins": "0.0220735",
+            ...
+        },
+        ...
+        ]
+        """
+        lines = raw_output.strip().split("\n")
+
+        # 1) Strip out spinner/log lines, e.g. containing “✔” or “Success” or “Initiating query”:
+        #    (Adjust as needed)
+        data_lines = [
+            line for line in lines
+            if line and not any(sub in line for sub in ["⠋", "✔", "🖨", "Initiating query", "Success", "written query"])
+        ]
+
+        # 2) If there’s nothing left, return empty
+        if not data_lines:
+            return []
+
+        # The first non-dashed line should be the header (e.g. "metric_time__month      max_price...")
+        header_line = data_lines[0]
+
+        # The second line is usually the dashed "----" line. We can skip it:
+        #   --------------------  ------------------------------  ...
+        #   But let's be robust in case sometimes there's no dashed line.
+        #   We'll look for the first "----" line in data_lines.
+        dashed_line_idx = None
+        for idx, line in enumerate(data_lines):
+            if re.match(r"^\s*-+\s*-+\s*", line):
+                dashed_line_idx = idx
+                break
+
+        # If we found a dashed line, the data lines start after that line
+        data_start_idx = dashed_line_idx + 1 if dashed_line_idx is not None else 1
+
+        # 3) Split the header line on 2+ spaces to get column names
+        #    e.g. "metric_time__month      max_price_volatility_all_coins" -> columns
+        header_cols = re.split(r"\s{2,}", header_line.strip())
+
+        # 4) For each subsequent line, split on 2+ spaces and map to the corresponding column
+        table_rows = []
+        for line in data_lines[data_start_idx:]:
+            # If it's another dashed line or blank, skip
+            if re.match(r"^\s*-+\s*$", line):
+                continue
+
+            cols = re.split(r"\s{2,}", line.strip())
+
+            # If the line doesn't have the same number of columns as the header,
+            # skip or handle gracefully
+            if len(cols) != len(header_cols):
+                continue
+
+            row_dict = {}
+            for col_name, value in zip(header_cols, cols):
+                row_dict[col_name] = value
+
+            table_rows.append(row_dict)
+
+        return table_rows
+    
+    def run_query_from_dict(self, query_dict):
+        """
+        Takes a dict like:
+          {
+             "metrics": [...],
+             "groupBy": [...],
+             "limit": 123,
+             "orderBy": [...]
+          }
+        Then runs 'mf query' accordingly and returns rows or error.
+        """
+        metrics_list = query_dict.get("metrics", [])
+        group_bys = query_dict.get("groupBy", [])
+        limit_value = query_dict.get("limit", None)
+        # For demonstration, ignoring 'orderBy' unless needed
+        # order_by = query_dict.get("orderBy", [])
+
+        # Must have metrics
+        if not metrics_list:
+            return {
+                "status": "ERROR",
+                "results": [],
+                "error": "No metrics provided"
+            }
 
         command = ["mf", "query"]
+        command.extend(["--metrics", ",".join(metrics_list)])
 
-        # ✅ Add --metrics argument
-        if metrics_list:
-            metric_names = [m["name"] for m in metrics_list if "name" in m]
-            if metric_names:
-                command.extend(["--metrics", ",".join(metric_names)])
-            else:
-                return {
-                    "queryId": query_id,
-                    "status": "ERROR",
-                    "results": [],
-                    "error": "No valid metric names found in query parameters"
-                }
-        else:
-            return {
-                "queryId": query_id,
-                "status": "ERROR",
-                "results": [],
-                "error": "Missing metrics in query parameters"
-            }
-
-        # Optional: add --group-by
         if group_bys:
-            dim_names = [g["name"] for g in group_bys if "name" in g]
-            if dim_names:
-                command.extend(["--group-by", ",".join(dim_names)])
+            command.extend(["--group-by", ",".join(group_bys)])
+        if limit_value is not None:
+            if isinstance(limit_value, float):
+                limit_value = int(limit_value)  # e.g. 10.0 -> 10
+            if limit_value is not None:
+                command.extend(["--limit", str(limit_value)])
 
-        # Optional: add --where
-        if filters:
-            filter_strs = []
-            for f in filters:
-                raw_sql = f.get("sql", "")
-                if raw_sql:
-                    filter_strs.append(raw_sql)
-            if filter_strs:
-                command.extend(["--where", " and ".join(filter_strs)])
-
-        # Optional: add --limit
-        if limit is not None:
-            command.extend(["--limit", str(limit)])
-
-        # Required for output
-        command.extend(["--csv", "-"])
-
+        # Possibly handle filters or orderBy if desired
         logging.info(f"Submitting MetricFlow command: {command}")
 
         try:
@@ -233,125 +405,42 @@ class DBTCoreClient:
 
             if result.returncode != 0:
                 return {
-                    "queryId": query_id,
                     "status": "ERROR",
                     "results": [],
                     "error": f"Command failed with code {result.returncode}: {result.stderr}"
                 }
+            
+            parsed_rows = self.parse_metricflow_table(result.stdout)
 
-            lines = result.stdout.strip().split("\n")
 
-            # 🧹 Filter out spinner/log lines
-            filtered_lines = [
-                line for line in lines
-                if line and not any(sub in line for sub in ["⠋", "✔", "🖨", "Initiating query", "Success", "written query"])
-            ]
-
-            # If no actual CSV lines remain, return empty results
-            if not filtered_lines:
-                return {
-                    "queryId": query_id,
-                    "status": "SUCCESSFUL",
-                    "results": [],
-                    "error": None
-                }
-
-            reader = csv.DictReader(filtered_lines)
-            rows = list(reader)
-
+         
             return {
-                "queryId": query_id,
                 "status": "SUCCESSFUL",
-                "results": rows,
-                "error": None
+                "results": [parsed_rows],
+                "error": {
+                    "stdout": result.stdout,
+                    "sterror": result.stderr,
+                    "command": command
+                }
             }
+
 
         except Exception as e:
             logging.exception("Unexpected error running query")
             return {
-                "queryId": query_id,
                 "status": "ERROR",
                 "results": [],
                 "error": str(e)
             }
 
-
-    def _find_dimensions_for_metric(self, metric_name: str):
-        if not self._metrics_cache:
-            return []  # or build the cache
-        for m in self._metrics_cache["metrics"]:
-            if m["name"] == metric_name:
-                return m["dimensions"]
-        return []
-
-    def createQuery(self, query_params):
-        """
-        Create a query in your local environment. 
-        Return a queryId so the caller can poll for results.
-        """
-        import uuid
-        query_id = str(uuid.uuid4())
-
-        # 1) Validate the dimensions here
-        metrics_list = query_params.get("metrics", [])
-        group_bys = query_params.get("groupBy", [])
-
-        invalid_dims = []
-
-        for metric_dict in metrics_list:
-            metric_name = metric_dict["name"]
-            # Pull valid dimensions from the cache
-            valid_dims = self._find_dimensions_for_metric(metric_name)
-
-            for g in group_bys:
-                requested_dim = g["name"]
-                # First, check if the full dimension is valid
-                if requested_dim in valid_dims:
-                    base_dim = requested_dim
-                else:
-                    parts = requested_dim.split("__")
-                    if len(parts) > 1:
-                        # If the full string is not valid, assume the last part might be an interval
-                        base_dim = "__".join(parts[:-1])
-                    else:
-                        base_dim = requested_dim
-
-                if base_dim not in valid_dims:
-                    invalid_dims.append((metric_name, requested_dim))
-
-
-        # 2) If there are invalid dimensions, return an error response
-        if invalid_dims:
-            lines = []
-            for (m, d) in invalid_dims:
-                suggestions = self._find_dimensions_for_metric(m)
-                lines.append(
-                    f"Dimension '{d}' is not valid for metric '{m}'.\n"
-                    f"Valid dimensions include: {suggestions}"
-                )
-
-            error_msg = "\n\n".join(lines)
-
-            return {
-                "queryId": None,      # no valid query ID in this scenario
-                "status": "ERROR",
-                "error": error_msg,
-                "queryParams": query_params
-            }
-
-        # 3) If no invalid dimensions, store the query and return success
-        self._query_store[query_id] = query_params
-        return {
-            "queryId": query_id,
-            "status": "CREATED",
-            "queryParams": query_params
-        }
-
-# Instantiate the dbt client
+#######################################
+# Instance
+#######################################
 dbt_client = DBTCoreClient()
 
+
 #######################################
-# JSON-RPC helpers and main loop remain unchanged...
+# JSON-RPC method handlers
 #######################################
 def build_success_response(request_id, result_obj):
     return {
@@ -383,6 +472,10 @@ def handle_initialize_request(_params):
     }
 
 def handle_list_tools_request():
+    """
+    Notice that 'fetch_query_result' no longer requires 'queryId'
+    but a 'query' dict with the same structure from create_query.
+    """
     return {
         "tools": [
             {
@@ -405,42 +498,19 @@ def handle_list_tools_request():
             },
             {
                 "name": "create_query",
-                "description": "Create a query for specific metrics/dimensions in dbt Core’s semantic layer.",
+                "description": "Create a query for specific metrics/dimensions in dbt Core’s semantic layer (no queryId).",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "metrics": {
                             "type": "array",
                             "description": "List of metrics to query",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {"type": "string"}
-                                },
-                                "required": ["name"]
-                            }
+                            "items": {"type": "string"}
                         },
                         "groupBy": {
                             "type": "array",
-                            "description": "List of dimension objects",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {"type": "string"}
-                                },
-                                "required": ["name"]
-                            }
-                        },
-                        "where": {
-                            "type": "array",
-                            "description": "List of filter objects",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "sql": {"type": "string"}
-                                },
-                                "required": ["sql"]
-                            }
+                            "description": "List of dimension names",
+                            "items": {"type": "string"}
                         },
                         "limit": {
                             "type": "number",
@@ -448,26 +518,8 @@ def handle_list_tools_request():
                         },
                         "orderBy": {
                             "type": "array",
-                            "description": "List of ordering objects",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "descending": {"type": "boolean"},
-                                    "groupBy": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {"type": "string"}
-                                        }
-                                    },
-                                    "metric": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {"type": "string"}
-                                        }
-                                    }
-                                },
-                                "required": ["descending"]
-                            }
+                            "description": "List of ordering dimension names",
+                            "items": {"type": "string"}
                         }
                     },
                     "required": ["metrics"]
@@ -475,16 +527,34 @@ def handle_list_tools_request():
             },
             {
                 "name": "fetch_query_result",
-                "description": "Fetch results for a previously created query. Poll until status=SUCCESSFUL.",
+                "description": "Fetch results by providing the same 'query' object from create_query. (No queryId needed.)",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "queryId": {
-                            "type": "string",
-                            "description": "ID of the query to fetch"
+                        "query": {
+                            "type": "object",
+                            "description": "Exact query dict from create_query output, e.g. { metrics:[...], groupBy:[...], ... }",
+                            "properties": {
+                                "metrics": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                },
+                                "groupBy": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                },
+                                "limit": {
+                                    "type": "number"
+                                },
+                                "orderBy": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                }
+                            },
+                            "required": ["metrics"]
                         }
                     },
-                    "required": ["queryId"]
+                    "required": ["query"]
                 }
             }
         ]
@@ -493,6 +563,7 @@ def handle_list_tools_request():
 def handle_call_tool_request(params):
     tool_name = params.get("name")
     args = params.get("arguments", {})
+
     if tool_name == "get_documentation":
         return handle_get_documentation()
     elif tool_name == "fetch_metrics":
@@ -507,21 +578,15 @@ def handle_call_tool_request(params):
 def handle_get_documentation():
     guide_text = (
         "# Guide: Using the dbt Semantic Layer MCP Server (Python)\n\n"
-        "This guide explains how to use the dbt Semantic Layer MCP Server, "
-        "which exposes convenient JSON-RPC 'tools' for querying dbt Core.\n\n"
         "## Tools\n"
-        "1. **get_documentation**: Shows this guide.\n"
-        "2. **fetch_metrics**: Retrieves all metrics known to dbt.\n"
-        "3. **create_query**: Creates a query for given metrics/dimensions.\n"
-        "4. ** When using a date/time dimension add time interval as suffix __period for example metric_time__week.\n"
-        "5. **fetch_query_result**: Fetches results for a created query.\n\n"
-        "## Example Usage\n\n"
-        "1. **fetch_metrics**: to see available metrics.\n"
-        "2. **create_query**: specifying metrics, optional groupBy, where, etc.\n"
-        "3. **fetch_query_result**: poll until the status is SUCCESSFUL.\n\n"
-        "## Troubleshooting\n"
-        "- Ensure metric/dimension names match what is returned by fetch_metrics.\n"
-        "- If a query fails, check logs or your dbt setup.\n"
+        "1. **get_documentation** – This guide.\n"
+        "2. **fetch_metrics** – Get a list of known metrics.\n"
+        "3. **create_query** – Build a query object (no ID).\n"
+        "4. **fetch_query_result** – Provide the query object and run it.\n\n"
+        "### Example:\n"
+        "1. fetch_metrics -> see what's available\n"
+        "2. create_query -> get {status, query}\n"
+        "3. fetch_query_result -> pass that same `query` to get results\n"
     )
     return [{"type": "text", "text": guide_text}]
 
@@ -530,34 +595,33 @@ def handle_fetch_metrics():
     return [{"type": "text", "text": json.dumps(result, indent=2)}]
 
 def handle_create_query(args):
-    created_query = dbt_client.createQuery(args)
-    return [{"type": "text", "text": json.dumps(created_query, indent=2)}]
+    # Return { "status": "...", "query": {...} }
+    created = dbt_client.createQuery(args)
+    return [{"type": "text", "text": json.dumps(created, indent=2)}]
 
 def handle_fetch_query_result(args):
-    query_id = args.get("queryId")
-    if not query_id:
-        raise ValueError("queryId is required")
-    results = dbt_client.getQueryResult(query_id)
+    """
+    Instead of a queryId, we expect a 'query' object:
+      {
+        "query": {
+           "metrics": [...],
+           "groupBy": [...],
+           "limit": 123,
+           "orderBy": [...]
+        }
+      }
+    """
+    query_obj = args.get("query")
+    if not query_obj:
+        raise ValueError("'query' is required, with shape { metrics: [...], groupBy: [...], ... }")
+
+    results = dbt_client.run_query_from_dict(query_obj)
     return [{"type": "text", "text": json.dumps(results, indent=2)}]
 
-def build_success_response(request_id, result_obj):
-    return {
-        "jsonrpc": "2.0",
-        "id": request_id,
-        "result": result_obj
-    }
 
-def build_error_response(request_id, code, message):
-    return {
-        "jsonrpc": "2.0",
-        "id": request_id,
-        "error": {
-            "code": code,
-            "message": message
-        }
-    }
-       
-
+#######################################
+# Main loop
+#######################################
 def main():
     logging.info("dbt Semantic Layer MCP Python server starting up. Listening on stdin for JSON-RPC requests...")
     for line in sys.stdin:
@@ -574,7 +638,9 @@ def main():
         method = request_json.get("method")
         params = request_json.get("params", {})
         logging.debug(f"method='{method}', id={request_id}, params={params}")
+
         if request_id is None:
+            # Notification / no response needed
             if method == "notifications/initialized":
                 logging.info("Received notifications/initialized. Doing nothing.")
             elif method == "notifications/cancelled":
@@ -582,6 +648,7 @@ def main():
             else:
                 logging.info(f"Unknown notification method '{method}', ignoring.")
             continue
+
         try:
             if method == "initialize":
                 response_obj = handle_initialize_request(params)
@@ -598,10 +665,12 @@ def main():
         except Exception as e:
             logging.exception(f"Exception handling request {method}")
             output = build_error_response(request_id, -32603, f"Internal error: {str(e)}")
+
         response_str = json.dumps(output)
         logging.debug(f"Sending response: {response_str}")
         print(response_str)
         sys.stdout.flush()
+
 
 if __name__ == "__main__":
     main()

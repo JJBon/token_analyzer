@@ -16,6 +16,12 @@ from mcpadapt.crewai_adapter import CrewAIAdapter
 import os
 import time
 from mcp import StdioServerParameters
+from pathlib import Path
+
+project_root = Path(__file__).resolve().parent
+venv_path =  project_root / "venv/bin/python"
+workflow_path = project_root / "dbt_semantic_layer_mcp_server.py"
+
 
 if __name__ == "__main__":
     with MCPAdapt(
@@ -24,8 +30,8 @@ if __name__ == "__main__":
             args = [
             "run",
             "--python",
-            "/home/juanjbon/dev/token_analyzer/venv/bin/python",
-            "/home/juanjbon/dev/token_analyzer/dbt_semantic_layer_mcp_server.py"
+            venv_path,
+            workflow_path
             ],
             env={**os.environ},
         ),
